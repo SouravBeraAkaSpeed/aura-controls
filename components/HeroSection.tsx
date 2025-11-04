@@ -63,7 +63,7 @@ const HeroSection = () => {
                 initial="hidden"
                 animate="visible"
                 variants={containerVariants}
-                className="flex flex-col items-center gap-6"
+                className="flex flex-col items-center gap-6 md:mt-[-50px] mt-[-80px]"
             >
                 {/* "Get Excited" Button */}
                 <motion.div
