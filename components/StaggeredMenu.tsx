@@ -358,7 +358,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     return (
         <div
             // CHANGED: Use `isAsideVisible` state for height control and fixed the typo.
-            className={`sm-scope z-40 ${isFixed ? `relative top-0 left-0 w-screen ${isAsideVisible ? "h-screen z-60" : "h-[150px]"} overflow-hidden` : 'w-full h-full'}`}
+            className={`sm-scope z-40 ${isFixed ? ` top-0 left-0 w-full ${isAsideVisible ? "absolute h-screen z-60" : "h-[150px]"} overflow-hidden` : 'w-full h-full'}`}
         >
             <div
                 className={(className ? className + ' ' : '') + 'staggered-menu-wrapper relative w-full h-full z-40'}

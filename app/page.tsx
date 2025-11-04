@@ -32,7 +32,7 @@ export default function Home() {
       <div className="min-h-screen w-full bg-black text-white overflow-x-hidden
         bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(120,119,198,0.3),rgba(255,255,255,0))] ">
 
-        <div className="absolute mx-auto inset-0 z-30" style={{ width: '100%', height: '100%' }}>
+        <div className="absolute mx-auto inset-0   z-30" style={{ width: '100%', height: '100%' }}>
           <GridScan
             enableWebcam={true}
             enableGyro={true}
@@ -50,23 +50,27 @@ export default function Home() {
           />
         </div>
 
-        <StaggeredMenu
-          isFixed
-          position="right"
-          items={menuItems}
-          socialItems={socialItems}
-          displaySocials={true}
-          displayItemNumbering={true}
-          menuButtonColor="#fff"
-          openMenuButtonColor="#fff"
-          changeMenuColorOnOpen={true}
-          colors={['#B19EEF', '#5227FF']}
-          logoUrl="/logo.png"
-          accentColor="#ff6b6b"
-          onMenuOpen={() => console.log('Menu opened')}
-          onMenuClose={() => console.log('Menu closed')}
-        />
-        <HeroSection />
+        <div className="flex flex-col h-screen w-full">
+
+          <StaggeredMenu
+            isFixed
+            position="right"
+            items={menuItems}
+            socialItems={socialItems}
+            displaySocials={true}
+            displayItemNumbering={true}
+            menuButtonColor="#fff"
+            openMenuButtonColor="#fff"
+            changeMenuColorOnOpen={true}
+            colors={['#B19EEF', '#5227FF']}
+            logoUrl="/logo.png"
+            accentColor="#ff6b6b"
+            onMenuOpen={() => console.log('Menu opened')}
+            onMenuClose={() => console.log('Menu closed')}
+          />
+          <HeroSection />
+
+        </div>
 
         <MediaPipeProvider>
           <ExploreSection />

@@ -58,7 +58,7 @@ const HeroSection = () => {
 
     const router = useRouter()
     return (
-        <div className="relative z-40 flex h-fit mt:mt-[60px] mt-[100px] mb-[200px] w-full flex-col items-center justify-center text-center px-4">
+        <div className="relative z-40 flex  h-full   w-full flex-col items-center justify-center text-center px-4">
             <motion.div
                 initial="hidden"
                 animate="visible"
