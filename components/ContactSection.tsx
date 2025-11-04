@@ -37,7 +37,7 @@ const ContactSection = () => {
                         <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">Get In Touch</h2>
                         <p className="text-lg text-white/60 mb-8 leading-relaxed">
                             Have a question, a project idea, or just want to talk about the future of interfaces?
-                            We'd love to hear from you.
+                            We&quot;d love to hear from you.
                         </p>
                         <div className="space-y-4">
                             <a href="mailto:contact@aura-controls.com" className="flex items-center gap-3 text-white/80 hover:text-purple-400 transition-colors">
@@ -64,7 +64,7 @@ const ContactSection = () => {
                         <AnimatePresence>
                             {submissionStatus === 'success' && (
                                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-green-400 text-center mt-4">
-                                    Thank you for your message! We'll get back to you shortly.
+                                    Thank you for your message! We&quot;ll get back to you shortly.
                                 </motion.p>
                             )}
                             {submissionStatus === 'error' && (
