@@ -103,7 +103,7 @@ const ClickDemo = () => {
                     </p>
                     <ul className="space-y-4 text-base sm:text-lg text-white/60">
                         <li className="flex items-start gap-4"><span className="text-purple-400 font-bold mt-1 text-xl">→</span><BoldText>Use your hand to guide the aiming reticle over a target.</BoldText></li>
-                        <li className="flex items-start gap-4"><span className="text-purple-400 font-bold mt-1 text-xl">→</span><BoldText>Briefly tap your **Thumb and Ring Finger** together to fire a "click".</BoldText></li>
+                        <li className="flex items-start gap-4"><span className="text-purple-400 font-bold mt-1 text-xl">→</span><BoldText>Briefly tap your **Thumb and Ring Finger** together to fire a &quot;click&quot;.</BoldText></li>
                         <li className="flex items-start gap-4"><span className="text-purple-400 font-bold mt-1 text-xl">→</span><BoldText>A successful hit will cause the target to flash.</BoldText></li>
                     </ul>
                 </div>
