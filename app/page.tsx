@@ -1,4 +1,5 @@
 "use client";
+import ContactSection from "@/components/ContactSection";
 import ExploreSection from "@/components/ExploreSection";
 import { GridScan } from "@/components/GridScan";
 import HeroSection from "@/components/HeroSection";
@@ -75,6 +76,9 @@ export default function Home() {
         <MediaPipeProvider>
           <ExploreSection />
         </MediaPipeProvider>
+
+
+        <ContactSection />
 
 
       </div>

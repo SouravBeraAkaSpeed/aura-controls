@@ -5,6 +5,8 @@ import VolumeBrightnessDemo from "./demos/VolumeBrightnessDemo";
 import CursorDemo from "./demos/CursorDemo";
 import { useRouter } from "next/navigation";
 import ClickDemo from "./demos/ClickDemo";
+import DragAndDropDemo from "./demos/DragAndDropDemo";
+import ScrollDemo from "./demos/ScrollDemo";
 
 const ExploreSection = () => {
     const { isCameraActive, startCamera, stopCamera } = useMediaPipe();
@@ -38,10 +40,12 @@ const ExploreSection = () => {
 
             </div>
             {/* The demo components are now ALWAYS visible */}
-            <div className="w-full h-full mt-8 md:space-y-16 space-y-[180px] ">
+            <div className="w-full h-full my-8 md:space-y-16 space-y-[180px] ">
                 <VolumeBrightnessDemo />
                 <CursorDemo />
                 <ClickDemo />
+                <DragAndDropDemo />
+                <ScrollDemo />
             </div>
         </section>
     );
