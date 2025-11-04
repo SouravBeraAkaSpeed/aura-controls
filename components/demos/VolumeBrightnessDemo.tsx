@@ -50,9 +50,13 @@ const VolumeBrightnessDemo = () => {
                     const deltaY = currentPos.y - lastPosRef.current.y;
                     const sensitivity = 0.01;
                     if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > sensitivity) {
-                        setVolume(prev => Math.max(0, Math.min(100, prev + (deltaY * -200))));
+                        const volumeChange = deltaY * -200;
+                        setVolume(prev => Math.max(0, Math.min(100, prev + volumeChange)));
                     } else if (Math.abs(deltaX) > sensitivity) {
-                        setBrightness(prev => Math.max(0, Math.min(100, prev + (deltaX * 200))));
+                        // --- THE FIX IS HERE ---
+                        // We multiply by -1 to invert the direction, matching the mirrored video feed.
+                        const brightnessChange = deltaX * -200; 
+                        setBrightness(prev => Math.max(0, Math.min(100, prev + brightnessChange)));
                     }
                 }
                 lastPosRef.current = currentPos;
@@ -61,8 +65,8 @@ const VolumeBrightnessDemo = () => {
     }, [handLandmarks, isCameraActive]);
 
     return (
-        <div id="volumebrightness" className="w-full max-w-7xl mx-auto p-12 h-screen flex items-center justify-center  rounded-2xl">
-            <div className="grid md:grid-cols-2 gap-16 items-center">
+        <div id="volumebrightness" className="w-full max-w-7xl mx-auto p-12 h-screen flex items-center justify-center rounded-2xl">
+             <div className="grid md:grid-cols-2 gap-16 items-center">
                 {/* Left Column: Interactive Demo */}
                 <div className="flex flex-col gap-12">
                     <div className="relative">
