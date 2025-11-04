@@ -34,7 +34,7 @@ const ExploreSection = () => {
 
             </div>
             {/* The demo components are now ALWAYS visible */}
-            <div className="w-full h-full mt-8 space-y-16">
+            <div className="w-full h-full mt-8 md:space-y-16 space-y-[180px] ">
                 <VolumeBrightnessDemo />
                 <CursorDemo />
                 {/* You can add more demo components here */}
