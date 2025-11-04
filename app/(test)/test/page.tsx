@@ -148,7 +148,7 @@ const AuraBrowserTest = () => {
           <div className="text-center p-8 bg-black bg-opacity-50 rounded-lg z-10">
             <h2 className="text-2xl font-semibold mb-4">How It Works</h2>
             <ol className="text-left list-decimal list-inside space-y-2">
-              <li>Click **"Start Demo"** and allow camera access.</li>
+              <li>Click **&quot;Start Demo&quot;** and allow camera access.</li>
               <li>Pinch your **Thumb** and **Index** finger.</li>
               <li>Move your hand to control the **Aura Cursor**.</li>
             </ol>
