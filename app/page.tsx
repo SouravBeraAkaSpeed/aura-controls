@@ -1,4 +1,5 @@
 "use client";
+
 import ContactSection from "@/components/ContactSection";
 import ExploreSection from "@/components/ExploreSection";
 import Footer from "@/components/Footer";
