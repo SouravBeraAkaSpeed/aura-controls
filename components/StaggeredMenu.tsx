@@ -13,7 +13,7 @@ const useScrollPosition = () => {
         };
 
         window.addEventListener('scroll', handleScroll);
-        
+
         // Cleanup function
         return () => {
             window.removeEventListener('scroll', handleScroll);
@@ -313,7 +313,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                 >
                     <div className="sm-logo flex items-center select-none pointer-events-auto" aria-label="Logo">
                         <img src={logoUrl || ''} alt="Logo" className="block md:h-10 h-8 w-auto object-contain" draggable={false} width={110} height={50} />
-                        <div className={`font-bold md:text-[28px] text-[18px] ml-2 ${open ? "text-black md:text-white" : "text-white"}`}>
+                        <div className={`font-bold md:text-[28px] text-[18px] cursor-target ml-2 ${open ? "text-black md:text-white" : "text-white"}`}>
                             AURA-CONTROLS
                         </div>
                     </div>
@@ -335,7 +335,9 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                 <aside id="staggered-menu-panel" ref={panelRef} className="staggered-menu-panel absolute top-0 right-0 bg-white flex flex-col p-[6em_2em_2em_2em] overflow-y-auto z-10 backdrop-blur-[12px]" style={{ WebkitBackdropFilter: 'blur(12px)' }} aria-hidden={!open}>
                     <div className="sm-panel-inner flex-1 flex flex-col gap-5">
                         <ul className="sm-panel-list list-none m-0 p-0 flex flex-col gap-2" role="list" data-numbering={displayItemNumbering || undefined}>
-                            {items && items.length ? (items.map((it, idx) => (<li className="sm-panel-itemWrap relative overflow-hidden leading-none" key={it.label + idx}><a className="sm-panel-item relative text-black font-semibold text-[4rem] cursor-pointer leading-none tracking-[-2px] uppercase transition-[background,color] duration-150 ease-linear inline-block no-underline pr-[1.4em]" href={it.link} aria-label={it.ariaLabel} data-index={idx + 1}><span className="sm-panel-itemLabel inline-block [transform-origin:50%_100%] will-change-transform">{it.label}</span></a></li>))) : (<li className="sm-panel-itemWrap relative overflow-hidden leading-none" aria-hidden="true"><span className="sm-panel-item relative text-black font-semibold text-[4rem] cursor-pointer leading-none tracking-[-2px] uppercase transition-[background,color] duration-150 ease-linear inline-block no-underline pr-[1.4em]"><span className="sm-panel-itemLabel inline-block [transform-origin:50%_100%] will-change-transform">No items</span></span></li>)}
+                            {items && items.length ? (items.map((it, idx) => (<li className="sm-panel-itemWrap relative overflow-hidden leading-none" key={it.label + idx}><a className="sm-panel-item relative text-black font-semibold text-[4rem] cursor-pointer leading-none tracking-[-2px] uppercase transition-[background,color] duration-150 ease-linear inline-block no-underline pr-[1.4em]" onClick={() => {
+                                toggleMenu()
+                            }} href={it.link} aria-label={it.ariaLabel} data-index={idx + 1}><span className="sm-panel-itemLabel inline-block [transform-origin:50%_100%] will-change-transform">{it.label}</span></a></li>))) : (<li className="sm-panel-itemWrap relative overflow-hidden leading-none" aria-hidden="true"><span className="sm-panel-item relative text-black font-semibold text-[4rem] cursor-pointer leading-none tracking-[-2px] uppercase transition-[background,color] duration-150 ease-linear inline-block no-underline pr-[1.4em]"><span className="sm-panel-itemLabel inline-block [transform-origin:50%_100%] will-change-transform">No items</span></span></li>)}
                         </ul>
                         {displaySocials && socialItems && socialItems.length > 0 && (
                             <div className="sm-socials mt-auto pt-8 flex flex-col gap-3" aria-label="Social links">

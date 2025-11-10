@@ -34,7 +34,7 @@ const ContactSection = () => {
                 <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
                     {/* Left Column: Info */}
                     <div className="text-left">
-                        <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">Get In Touch</h2>
+                        <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4 cursor-target w-fit">Get In Touch</h2>
                         <p className="text-lg text-white/60 mb-8 leading-relaxed">
                             Have a question, a project idea, or just want to talk about the future of interfaces?
                             We&quot;d love to hear from you.
@@ -57,7 +57,7 @@ const ContactSection = () => {
                         <input type="text" name="service_name" placeholder="Service of Interest (e.g., More Features)" className="w-full bg-[#111015] border border-[#2D2A33] rounded-lg px-4 py-3 text-white/90 focus:outline-none focus:ring-2 focus:ring-purple-500" />
                         <textarea name="query" placeholder="Your Message..." required rows={5} className="w-full bg-[#111015] border border-[#2D2A33] rounded-lg px-4 py-3 text-white/90 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"></textarea>
 
-                        <button type="submit" disabled={isSubmitting} className="w-full px-8 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition-colors duration-300 disabled:bg-gray-500 disabled:cursor-not-allowed flex items-center justify-center">
+                        <button type="submit" disabled={isSubmitting} className=" cursor-target w-full px-8 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition-colors duration-300 disabled:bg-gray-500 disabled:cursor-not-allowed flex items-center justify-center">
                             {isSubmitting ? "Submitting..." : "Send Message"}
                         </button>
 

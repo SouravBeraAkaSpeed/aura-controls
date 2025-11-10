@@ -3,8 +3,14 @@
 import { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from "react";
 import { HandLandmarker, FilesetResolver, Landmark } from "@mediapipe/tasks-vision";
 
+// --- NEW: Define the shape for two hands ---
+export interface HandsResult {
+  left: Landmark[] | null;
+  right: Landmark[] | null;
+}
+
 interface MediaPipeContextType {
-  handLandmarks: Landmark[] | null;
+  hands: HandsResult; // Changed from handLandmarks
   isCameraActive: boolean;
   startCamera: () => void;
   stopCamera: () => void;
@@ -14,10 +20,9 @@ const MediaPipeContext = createContext<MediaPipeContextType | undefined>(undefin
 
 export const MediaPipeProvider = ({ children }: { children: ReactNode }) => {
   const handLandmarkerRef = useRef<HandLandmarker | null>(null);
-  const [handLandmarks, setHandLandmarks] = useState<Landmark[] | null>(null);
+  const [hands, setHands] = useState<HandsResult>({ left: null, right: null });
   const [isCameraActive, setIsCameraActive] = useState(false);
   
-  // Create a virtual video element that lives in this component's scope
   const videoRef = useRef<HTMLVideoElement | null>(null);
   if (typeof window !== "undefined" && !videoRef.current) {
       videoRef.current = document.createElement("video");
@@ -35,10 +40,11 @@ export const MediaPipeProvider = ({ children }: { children: ReactNode }) => {
         const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm");
         const landmarker = await HandLandmarker.createFromOptions(vision, {
           baseOptions: { modelAssetPath: `/hand_landmarker.task`, delegate: "GPU" },
-          runningMode: "VIDEO", numHands: 1,
+          runningMode: "VIDEO", 
+          numHands: 2, // --- CHANGED: Track two hands ---
         });
         handLandmarkerRef.current = landmarker;
-        console.log("MediaPipeProvider: Model loaded successfully.");
+        console.log("MediaPipeProvider: Model loaded for 2 hands successfully.");
       } catch (error) {
         console.error("MediaPipeProvider: Error loading model.", error);
       }
@@ -50,8 +56,7 @@ export const MediaPipeProvider = ({ children }: { children: ReactNode }) => {
     const video = videoRef.current;
     const handLandmarker = handLandmarkerRef.current;
 
-    // Critical check: Ensure video is ready and has dimensions
-    if (!video || !handLandmarker || video.videoWidth === 0 || video.videoHeight === 0) {
+    if (!video || !handLandmarker || video.videoWidth === 0) {
       animationFrameId.current = requestAnimationFrame(predictWebcam);
       return;
     }
@@ -60,11 +65,19 @@ export const MediaPipeProvider = ({ children }: { children: ReactNode }) => {
         lastVideoTime.current = video.currentTime;
         const results = handLandmarker.detectForVideo(video, performance.now());
         
-        if (results.landmarks && results.landmarks.length > 0) {
-          setHandLandmarks(results.landmarks[0]);
-        } else {
-          setHandLandmarks(null);
+        // --- NEW: Process and separate left/right hands ---
+        const detectedHands: HandsResult = { left: null, right: null };
+        if (results.landmarks && results.handedness && results.landmarks.length > 0) {
+            for (let i = 0; i < results.landmarks.length; i++) {
+                const hand = results.handedness[i][0].categoryName;
+                if (hand === 'Left') {
+                    detectedHands.left = results.landmarks[i];
+                } else if (hand === 'Right') {
+                    detectedHands.right = results.landmarks[i];
+                }
+            }
         }
+        setHands(detectedHands);
     }
     
     animationFrameId.current = requestAnimationFrame(predictWebcam);
@@ -77,13 +90,10 @@ export const MediaPipeProvider = ({ children }: { children: ReactNode }) => {
       const video = videoRef.current;
       video.srcObject = stream;
       
-      // --- THE KEY FIX IS HERE ---
-      // We add an event listener. The prediction loop will only start
-      // AFTER the video has loaded its metadata and knows its dimensions.
       video.onloadedmetadata = () => {
         setIsCameraActive(true);
         console.log("MediaPipeProvider: Camera started and metadata loaded.");
-        predictWebcam(); // Start the loop now that the video is ready
+        predictWebcam();
       };
       
     } catch(err) {
@@ -100,11 +110,11 @@ export const MediaPipeProvider = ({ children }: { children: ReactNode }) => {
     }
     videoRef.current.srcObject = null;
     setIsCameraActive(false);
-    setHandLandmarks(null);
+    setHands({ left: null, right: null }); // Reset both hands
     console.log("MediaPipeProvider: Camera stopped.");
   };
 
-  const value = { handLandmarks, isCameraActive, startCamera, stopCamera };
+  const value = { hands, isCameraActive, startCamera, stopCamera };
 
   return (
     <MediaPipeContext.Provider value={value}>

@@ -44,7 +44,8 @@ const scrollContent = [
 ];
 
 const ScrollDemo = () => {
-    const { handLandmarks, isCameraActive } = useMediaPipe();
+    const { hands, isCameraActive } = useMediaPipe();
+    const { right: handLandmarks } = hands;
     const [scrollDirection, setScrollDirection] = useState<'up' | 'down' | null>(null);
     const scrollAreaRef = useRef<HTMLDivElement>(null);
     const animationFrameId = useRef<number>(0);
@@ -84,7 +85,7 @@ const ScrollDemo = () => {
     return (
         <div className="w-full max-w-7xl mx-auto p-8 sm:p-12 h-screen flex items-center justify-center rounded-2xl">
             <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
-                <div ref={scrollAreaRef} className="relative h-96 bg-black border-2 border-purple-500/50 rounded-lg overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-purple-500/50 scrollbar-track-transparent">
+                <div ref={scrollAreaRef} className="relative h-96 cursor-target bg-black border-2 border-purple-500/50 rounded-lg overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-purple-500/50 scrollbar-track-transparent">
                     <AnimatePresence>
                         {scrollDirection === 'up' && (
                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="sticky top-0 h-12 w-full bg-gradient-to-t from-transparent to-purple-500/50 blur-md -mt-6" />
@@ -114,7 +115,7 @@ const ScrollDemo = () => {
                 </div>
 
                 <div className="text-left">
-                    <h3 className="text-3xl sm:text-4xl font-bold mb-4 text-white">Seamless Scrolling</h3>
+                    <h3 className="text-3xl sm:text-4xl font-bold mb-4 text-white w-fit cursor-target">Seamless Scrolling</h3>
                     <p className="text-base sm:text-lg text-white/60 mb-8 leading-relaxed">
                         Navigate long documents and webpages effortlessly. Hold a gesture to engage a smooth,
                         continuous scroll at a comfortable speed.

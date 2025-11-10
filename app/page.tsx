@@ -1,11 +1,13 @@
 "use client";
 import ContactSection from "@/components/ContactSection";
 import ExploreSection from "@/components/ExploreSection";
+import Footer from "@/components/Footer";
 import { GridScan } from "@/components/GridScan";
 import HeroSection from "@/components/HeroSection";
 import { MediaPipeProvider } from "@/components/MediaPipeProvider";
 import SplashCursor from "@/components/SplashCursor";
 import StaggeredMenu from "@/components/StaggeredMenu";
+import TargetCursor from "@/components/TargetCursor";
 import Image from "next/image";
 import { Suspense } from "react";
 
@@ -28,6 +30,11 @@ export default function Home() {
     <Suspense fallback={<div className="w-full h-screen bg-black flex items-center justify-center text-white">Loading Your Aura...</div>}>
 
 
+      <TargetCursor
+        spinDuration={2}
+        hideDefaultCursor={true}
+        parallaxOn={true}
+      />
 
 
       <div className="min-h-screen w-full bg-black text-white overflow-x-hidden
@@ -79,6 +86,8 @@ export default function Home() {
 
 
         <ContactSection />
+
+        <Footer />
 
 
       </div>

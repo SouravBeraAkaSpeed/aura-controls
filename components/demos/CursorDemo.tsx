@@ -10,7 +10,8 @@ const BoldText = ({ children }: { children: string }) => {
 };
 
 const CursorDemo = () => {
-    const { handLandmarks, isCameraActive } = useMediaPipe();
+    const { hands, isCameraActive } = useMediaPipe();
+    const { right: handLandmarks } = hands;
     const [cursorPosition, setCursorPosition] = useState({ x: 0.5, y: 0.5 });
     const [isPinching, setIsPinching] = useState(false);
 
@@ -38,7 +39,7 @@ const CursorDemo = () => {
 
 
                 <div className="text-left">
-                    <h3 className="text-3xl sm:text-4xl font-bold mb-4 text-white">Precision Cursor Control</h3>
+                    <h3 className="text-3xl sm:text-4xl font-bold mb-4 text-white  cursor-target w-fit">Precision Cursor Control</h3>
                     <p className="text-base sm:text-lg text-white/60 mb-8 leading-relaxed">
                         Navigate your digital space with newfound freedom. The cursor control gesture is designed
                         for intuitive and comfortable long-distance interaction.
@@ -49,7 +50,7 @@ const CursorDemo = () => {
                         <li className="flex items-start gap-4"><span className="text-purple-400 font-bold mt-1 text-xl">→</span><BoldText>Release the pinch to dismiss the cursor.</BoldText></li>
                     </ul>
                 </div>
-                <div className="relative aspect-video bg-black border-2 border-purple-500/50 rounded-lg overflow-hidden">
+                <div className="relative cursor-target aspect-video bg-black border-2 border-purple-500/50 rounded-lg overflow-hidden cursor-target">
                     <div className="absolute inset-0" style={{
                         backgroundSize: '40px 40px',
                         backgroundImage: 'linear-gradient(to right, rgba(167, 139, 250, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(167, 139, 250, 0.1) 1px, transparent 1px)',

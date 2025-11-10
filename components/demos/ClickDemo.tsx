@@ -17,10 +17,11 @@ const demoButtons = [
 ];
 
 const ClickDemo = () => {
-    const { handLandmarks, isCameraActive } = useMediaPipe();
+    const { hands, isCameraActive } = useMediaPipe();
+    const { right: handLandmarks } = hands;
     const [cursorPosition, setCursorPosition] = useState({ x: -1, y: -1 });
     const [clickedButtonId, setClickedButtonId] = useState<string | null>(null);
-    
+
     const wasPinchingRef = useRef(false);
     const demoAreaRef = useRef<HTMLDivElement>(null);
 
@@ -30,7 +31,7 @@ const ClickDemo = () => {
             const ringTip = handLandmarks[16];
             const midPointX = 1 - ((thumbTip.x + ringTip.x) / 2); // Mirrored
             const midPointY = (thumbTip.y + ringTip.y) / 2;
-            
+
             setCursorPosition({ x: midPointX, y: midPointY });
 
             const distance = Math.hypot(thumbTip.x - ringTip.x, thumbTip.y - ringTip.y);
@@ -41,10 +42,10 @@ const ClickDemo = () => {
                 const demoRect = demoAreaRef.current.getBoundingClientRect();
                 const clickX = demoRect.left + (midPointX * demoRect.width);
                 const clickY = demoRect.top + (midPointY * demoRect.height);
-                
+
                 demoButtons.forEach(button => {
                     const btnElement = document.getElementById(button.id);
-                    if(btnElement) {
+                    if (btnElement) {
                         const btnRect = btnElement.getBoundingClientRect();
                         if (clickX > btnRect.left && clickX < btnRect.right && clickY > btnRect.top && clickY < btnRect.bottom) {
                             setClickedButtonId(button.id);
@@ -63,7 +64,7 @@ const ClickDemo = () => {
         <div className="w-full max-w-7xl mx-auto p-8 sm:p-12 h-screen flex items-center justify-centerrounded-2xl">
             <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
                 {/* Left Column: Interactive Demo */}
-                <div ref={demoAreaRef} className="relative aspect-video bg-black border-2 border-purple-500/50 rounded-lg overflow-hidden">
+                <div ref={demoAreaRef} className="relative aspect-video cursor-target bg-black border-2 border-purple-500/50 rounded-lg overflow-hidden">
                     {/* --- THE FIX IS HERE: Responsive Flexbox Layout --- */}
                     <div className="absolute inset-0 p-4 flex flex-wrap items-center justify-center gap-4">
                         {demoButtons.map(button => (
@@ -71,7 +72,7 @@ const ClickDemo = () => {
                                 key={button.id}
                                 id={button.id}
                                 className={button.className}
-                                animate={{ 
+                                animate={{
                                     scale: clickedButtonId === button.id ? 1.15 : 1,
                                     filter: clickedButtonId === button.id ? 'brightness(1.5)' : 'brightness(1)',
                                 }}
@@ -79,24 +80,24 @@ const ClickDemo = () => {
                             />
                         ))}
                     </div>
-                    
+
                     <motion.div
                         className="absolute w-6 h-6 rounded-full border-2 border-white pointer-events-none"
                         style={{ top: `${cursorPosition.y * 100}%`, left: `${cursorPosition.x * 100}%`, transform: 'translate(-50%, -50%)' }}
                         animate={{ opacity: cursorPosition.x >= 0 ? 0.7 : 0 }}
                     />
-                    
+
                     {/* --- THE FIX IS HERE: Elegant Overlay --- */}
                     {!isCameraActive && (
                         <div className="absolute inset-0 bg-black/50 backdrop-blur-lg flex items-center justify-center p-4 border border-purple-500/50 rounded-lg">
-                           <p className="text-white/80 text-lg text-center font-medium">Activate Live Demo to click the buttons</p>
+                            <p className="text-white/80 text-lg text-center font-medium">Activate Live Demo to click the buttons</p>
                         </div>
                     )}
                 </div>
 
                 {/* Right Column: Text Description */}
                 <div className="text-left">
-                    <h3 className="text-3xl sm:text-4xl font-bold mb-4 text-white">Targeted Clicking</h3>
+                    <h3 className="text-3xl sm:text-4xl font-bold mb-4 text-white w-fit cursor-target">Targeted Clicking</h3>
                     <p className="text-base sm:text-lg text-white/60 mb-8 leading-relaxed">
                         Perform precise clicks without touching your mouse. The click gesture is quick,
                         ergonomic, and perfect for interacting with UI elements from a distance.

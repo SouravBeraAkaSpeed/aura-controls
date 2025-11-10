@@ -86,7 +86,7 @@ const HeroSection = () => {
                         {/* Use inline-flex to place items side-by-side */}
                         <div className="inline-flex items-center ml-4">
                             {/* The "Farmers" text with strikethrough */}
-                            <span className="relative text-purple-400">
+                            <span className="relative text-purple-400 ">
                                 Farmers
                                 <motion.span
                                     initial="hidden"
@@ -101,7 +101,7 @@ const HeroSection = () => {
                                 initial="hidden"
                                 animate="visible"
                                 variants={newTextVariant}
-                                className="ml-4 text-purple-400 whitespace-nowrap" // Added margin-left for spacing
+                                className="ml-4 text-purple-400 whitespace-nowrap cursor-target" // Added margin-left for spacing
                             >
                                 Controllers.
                             </motion.span>
@@ -118,7 +118,7 @@ const HeroSection = () => {
                     </button>
                     <button onClick={() => {
                         router.push("/#explore")
-                    }} className="px-8 py-3 cursor-pointer bg-black/20 border border-white/20 text-white/80 font-semibold rounded-full hover:bg-white/10 transition-colors duration-300">
+                    }} className="px-8 py-3 cursor-target cursor-pointer bg-black/20 border border-white/20 text-white/80 font-semibold rounded-full hover:bg-white/10 transition-colors duration-300">
                         Explore
                     </button>
                 </motion.div>

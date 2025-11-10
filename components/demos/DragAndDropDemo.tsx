@@ -11,7 +11,8 @@ const BoldText = ({ children }: { children: string }) => {
 };
 
 const DragAndDropDemo = () => {
-    const { handLandmarks, isCameraActive } = useMediaPipe();
+    const { hands, isCameraActive } = useMediaPipe();
+    const { right: handLandmarks } = hands;
 
     // State for positions and gestures
     const [cursorPosition, setCursorPosition] = useState({ x: -1, y: -1 }); // Start off-screen
@@ -91,7 +92,7 @@ const DragAndDropDemo = () => {
 
                 {/* Right Column: Text Description */}
                 <div className="text-left">
-                    <h3 className="text-3xl sm:text-4xl font-bold mb-4 text-white">Drag & Drop</h3>
+                    <h3 className="text-3xl sm:text-4xl font-bold mb-4 text-white w-fit cursor-target">Drag & Drop</h3>
                     <p className="text-base sm:text-lg text-white/60 mb-8 leading-relaxed">
                         Move objects across your screen with a two-stage gesture that separates aiming from grabbing,
                         giving you unparalleled precision.
@@ -104,7 +105,7 @@ const DragAndDropDemo = () => {
                 </div>
 
                 {/* Left Column: Interactive Demo */}
-                <div className="relative aspect-video bg-black border-2 border-purple-500/50 rounded-2xl flex items-center justify-center overflow-hidden">
+                <div className="relative cursor-target aspect-video bg-black border-2 border-purple-500/50 rounded-2xl flex items-center justify-center overflow-hidden">
                     {/* Drop Zone Target */}
                     <motion.div
                         className="absolute w-[40%] h-[50%] text-5xl  right-[10%] border-2 border-dashed border-green-500/80 rounded-2xl flex items-center justify-center transition-colors"

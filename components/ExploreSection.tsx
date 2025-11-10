@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import ClickDemo from "./demos/ClickDemo";
 import DragAndDropDemo from "./demos/DragAndDropDemo";
 import ScrollDemo from "./demos/ScrollDemo";
+import TabSwitchDemo from "./TabSwitchDemo";
 
 const ExploreSection = () => {
     const { isCameraActive, startCamera, stopCamera } = useMediaPipe();
@@ -28,7 +29,7 @@ const ExploreSection = () => {
                         startCamera()
                         router.push("/#volumebrightness")
                     }}
-                    className={`px-8 py-4 rounded-full font-bold text-xl transition-all duration-300
+                    className={`px-8 py-4 cursor-target rounded-full font-bold text-xl transition-all duration-300
                         ${isCameraActive
                             ? 'bg-red-600 hover:bg-red-700 text-white shadow-[0_0_20px_4px_rgba(239,68,68,0.5)]'
                             : 'bg-purple-600 hover:bg-purple-700 text-white shadow-[0_0_20px_4px_rgba(147,51,234,0.5)]'}`
@@ -46,6 +47,7 @@ const ExploreSection = () => {
                 <ClickDemo />
                 <DragAndDropDemo />
                 <ScrollDemo />
+                <TabSwitchDemo />
             </div>
         </section>
     );
