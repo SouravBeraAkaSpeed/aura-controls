@@ -175,7 +175,7 @@ const PricingSection = () => {
                                     </button>
                                 </div>
                             ) : (
-                                <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-4">
+                                <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-4 z-[150]">
                                     <h3 className="text-2xl font-bold text-white text-center mb-2">
                                         Suggest Your Price
                                     </h3>
