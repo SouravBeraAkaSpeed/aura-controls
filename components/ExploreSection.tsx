@@ -15,6 +15,11 @@ const ExploreSection = () => {
 
     return (
         <section id="explore" className="relative z-10 w-full  px-4 h-full ">
+
+            <div className="absolute inset-0 overflow-hidden">
+                <div className="absolute -top-32 -left-32 w-96 h-96 bg-purple-600/30 rounded-full blur-[150px]" />
+                <div className="absolute bottom-0 right-0 w-[450px] h-[450px] bg-blue-600/20 rounded-full blur-[200px]" />
+            </div>
             <div className="flex flex-col items-center justify-center gap-12 h-screen">
 
 

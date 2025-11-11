@@ -20,7 +20,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Aura Controls From Toil Labs",
+  title: "Aura Controls | Presented by Toil Labs",
   description: "Feel like Tony Stark. Control your PC or Mac with simple hand gestures using just your webcam. The futuristic Jarvis-style interface is here. Command your world.",
 };
 

@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { User, Settings, LogOut, Loader2 } from "lucide-react";
+import { User, Settings, LogOut, Loader2, LayoutDashboard } from "lucide-react";
 
 export const ProfileButton = () => {
     const { session, isLoading } = useAuth();
@@ -27,7 +27,13 @@ export const ProfileButton = () => {
 
     // If the user is not signed in, this component will render nothing.
     if (!session) {
-        return null;
+        return (
+            <Button className="cursor-pointer" onClick={() => {
+                router.push("/sign-in")
+            }}>
+                SignIn
+            </Button>
+        )
     }
 
     const getInitials = (name?: string | null) => {
@@ -65,8 +71,10 @@ export const ProfileButton = () => {
                 </div>
                 <Separator className="bg-gray-700" />
                 <div className="p-2">
-                    <Button variant="ghost" className="w-full justify-start gap-2 cursor-pointer">
-                        <Settings className="h-4 w-4" /> Account Settings
+                    <Button variant="ghost" onClick={() => {
+                        router.push("/dashboard")
+                    }} className="w-full justify-start gap-2 cursor-pointer">
+                        <LayoutDashboard className="h-4 w-4" /> App Dashboard
                     </Button>
                     <Button variant="ghost" onClick={handleLogout} className="w-full cursor-pointer justify-start gap-2 text-red-400 hover:text-red-400 hover:bg-red-900/50">
                         <LogOut className="h-4 w-4" /> Log Out

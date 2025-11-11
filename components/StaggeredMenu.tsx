@@ -2,6 +2,7 @@
 
 import React, { useCallback, useLayoutEffect, useRef, useState, useEffect } from 'react';
 import { gsap } from 'gsap';
+import { ProfileButton } from './ProfileButton';
 
 // --- NEW: Custom hook to track scroll position ---
 const useScrollPosition = () => {
@@ -312,23 +313,29 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                     aria-label="Main navigation header"
                 >
                     <div className="sm-logo flex items-center select-none pointer-events-auto" aria-label="Logo">
-                        <img src={logoUrl || ''} alt="Logo" className="block md:h-10 h-8 w-auto object-contain" draggable={false} width={110} height={50} />
+                        <img src={logoUrl || ''} alt="Logo" className="block md:h-12 h-8 w-auto object-contain" draggable={false} width={110} height={50} />
                         <div className={`font-bold md:text-[28px] text-[18px] cursor-target ml-2 ${open ? "text-black md:text-white" : "text-white"}`}>
                             AURA-CONTROLS
                         </div>
                     </div>
-                    {/* (The rest of the header remains the same) */}
-                    <button ref={toggleBtnRef} className="sm-toggle relative inline-flex items-center gap-[0.3rem] bg-transparent border-0 cursor-pointer font-medium leading-none overflow-visible pointer-events-auto" aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open} aria-controls="staggered-menu-panel" onClick={toggleMenu} type="button">
-                        <span ref={textWrapRef} className="sm-toggle-textWrap relative inline-block h-[1em] overflow-hidden whitespace-nowrap w-[var(--sm-toggle-width,auto)] min-w-[var(--sm-toggle-width,auto)]" aria-hidden="true">
-                            <span ref={textInnerRef} className="sm-toggle-textInner flex flex-col leading-none">
-                                {textLines.map((l, i) => (<span className={`sm-toggle-line block h-[1em] leading-none ${open ? "text-black" : ""}`} key={i}>{l}</span>))}
+
+                    <div className='flex items-center justify-center space-x-3'>
+
+                        <ProfileButton />
+                        {/* (The rest of the header remains the same) */}
+                        <button ref={toggleBtnRef} className="sm-toggle relative inline-flex items-center gap-[0.3rem] bg-transparent border-0 cursor-pointer font-medium leading-none overflow-visible pointer-events-auto" aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open} aria-controls="staggered-menu-panel" onClick={toggleMenu} type="button">
+                            <span ref={textWrapRef} className="sm-toggle-textWrap relative inline-block h-[1em] overflow-hidden whitespace-nowrap w-[var(--sm-toggle-width,auto)] min-w-[var(--sm-toggle-width,auto)]" aria-hidden="true">
+                                <span ref={textInnerRef} className="sm-toggle-textInner flex flex-col leading-none">
+                                    {textLines.map((l, i) => (<span className={`sm-toggle-line block h-[1em] leading-none ${open ? "text-black" : ""}`} key={i}>{l}</span>))}
+                                </span>
                             </span>
-                        </span>
-                        <span ref={iconRef} className={` ${open ? "text-black" : ""} sm-icon relative w-[14px] h-[14px] shrink-0 inline-flex items-center justify-center [will-change:transform]`} aria-hidden="true">
-                            <span ref={plusHRef} className="sm-icon-line absolute left-1/2 top-1/2 w-full h-[2px] bg-current rounded-[2px] -translate-x-1/2 -translate-y-1/2 [will-change:transform]" />
-                            <span ref={plusVRef} className="sm-icon-line sm-icon-line-v absolute left-1/2 top-1/2 w-full h-[2px] bg-current rounded-[2px] -translate-x-1/2 -translate-y-1/2 [will-change:transform]" />
-                        </span>
-                    </button>
+                            <span ref={iconRef} className={` ${open ? "text-black" : ""} sm-icon relative w-[14px] h-[14px] shrink-0 inline-flex items-center justify-center [will-change:transform]`} aria-hidden="true">
+                                <span ref={plusHRef} className="sm-icon-line absolute left-1/2 top-1/2 w-full h-[2px] bg-current rounded-[2px] -translate-x-1/2 -translate-y-1/2 [will-change:transform]" />
+                                <span ref={plusVRef} className="sm-icon-line sm-icon-line-v absolute left-1/2 top-1/2 w-full h-[2px] bg-current rounded-[2px] -translate-x-1/2 -translate-y-1/2 [will-change:transform]" />
+                            </span>
+                        </button>
+
+                    </div>
                 </header>
 
                 {/* (The aside panel remains unchanged) */}

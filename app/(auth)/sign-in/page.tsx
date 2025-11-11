@@ -288,10 +288,10 @@ const SignIn = () => {
 
       <div className="z-50 my-2 flex h-[200px] max-w-md flex-col items-center justify-center">
         <h2 className=" text-left text-2xl font-bold">
-          Welcome Back ! 
+          Welcome Back 👋
         </h2>
         <h4 className="text-md my-2 text-left">
-          [Slogan]
+          The Future is in Your Hands.
         </h4>
       </div>
 
@@ -335,7 +335,7 @@ const SignIn = () => {
           <div className="my-8 h-[1px] w-full bg-gradient-to-r from-transparent via-neutral-300 to-transparent dark:via-neutral-700" />
           <button
             type="button"
-            onClick={() => router.push(`/sign-up/?isEmbedded=${isEmbbeded}&redirect_url=https://scribiq.com`)}
+            onClick={() => router.push(`/sign-up/?isEmbedded=${isEmbbeded}&redirect_url=https://aura-controls.toil-labs.com`)}
             className=" w-full rounded-[15px] border-2 border-purple-600 py-2 text-white hover:bg-purple-800"
           >
             Sign Up

@@ -8,7 +8,7 @@ const Footer = () => {
     <footer id="footer" className="relative z-10 w-full bg-black border-t border-white/10 pt-16 pb-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          
+
           {/* Column 1: Brand */}
           <div className="md:col-span-1">
             <Link href="/" className="flex items-center gap-2">
@@ -30,17 +30,17 @@ const Footer = () => {
               <li><Link href="#contact" className="text-white/60 hover:text-purple-400 transition-colors">Contact</Link></li>
             </ul>
           </div>
-          
+
           {/* Column 3: Connect Links */}
           <div>
             <h3 className="text-sm font-semibold text-white/90 tracking-wider uppercase">Connect</h3>
             <ul className="mt-4 space-y-4">
-              <li><a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-purple-400 transition-colors">Twitter</a></li>
-              <li><a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-purple-400 transition-colors">GitHub</a></li>
-              <li><a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-purple-400 transition-colors">LinkedIn</a></li>
+              <li><a href="https://www.youtube.com/@gralius" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-purple-400 transition-colors">Youtube</a></li>
+              <li><a href="https://github.com/SouravBeraAkaSpeed" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-purple-400 transition-colors">GitHub</a></li>
+              <li><a href="https://www.linkedin.com/in/sourav-bera-/" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-purple-400 transition-colors">LinkedIn</a></li>
             </ul>
           </div>
-          
+
           {/* Column 4: Legal Links */}
           <div>
             <h3 className="text-sm font-semibold text-white/90 tracking-wider uppercase">Legal</h3>
