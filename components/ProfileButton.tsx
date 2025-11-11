@@ -67,6 +67,7 @@ export const ProfileButton = () => {
                             <p className="font-semibold truncate">{session.user.name || "User"}</p>
                             <p className="text-sm text-gray-400 truncate">{session.user.email}</p>
                         </div>
+
                     </div>
                 </div>
                 <Separator className="bg-gray-700" />
