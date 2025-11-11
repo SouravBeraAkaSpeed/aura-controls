@@ -29,7 +29,7 @@ const ContactSection = () => {
     };
 
     return (
-        <section id="contact" className="w-full py-20 px-4 relative z-10">
+        <section id="contact" className="w-full py-20 px-4 relative z-2">
             <div className="w-full max-w-7xl mx-auto p-8 sm:p-12 h-screen flex items-center justify-center rounded-2xl">
                 <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
                     {/* Left Column: Info */}

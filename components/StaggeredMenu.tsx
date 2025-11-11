@@ -295,7 +295,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     }, [playOpen, playClose, animateIcon, animateColor, animateText, onMenuOpen, onMenuClose]);
 
     return (
-        <div className={`sm-scope ${isFixed ? 'fixed top-0 left-0 w-full z-50' : 'relative w-full h-full'} ${isAsideVisible ? 'h-screen' : 'h-auto'}`}>
+        <div className={`sm-scope ${isFixed ? 'fixed top-0 left-0 w-full z-60' : 'relative w-full h-full'} ${isAsideVisible ? 'h-screen' : 'h-auto'}`}>
             <div
                 className={(className ? className + ' ' : '') + 'staggered-menu-wrapper relative w-full h-full z-40'}
                 style={accentColor ? ({ ['--sm-accent' as any]: accentColor } as React.CSSProperties) : undefined}

@@ -68,7 +68,7 @@ const PricingSection = () => {
     };
 
     return (
-        <section id="pricing" className="relative z-10 w-full py-24 sm:py-32 overflow-hidden bg-transparent">
+        <section id="pricing" className="relative z-50 w-full py-24 sm:py-32 overflow-hidden bg-transparent">
             {/* Background gradient glows */}
 
             <div className="absolute inset-0 overflow-hidden">
@@ -92,9 +92,9 @@ const PricingSection = () => {
                     pure, unadulterated control.
                 </p>
 
-                <div className="w-full max-w-4xl mt-20 grid md:grid-cols-2 gap-14 md:gap-20 items-start text-left">
+                <div className="w-full max-w-3xl mt-20 grid md:grid-cols-2 gap-14 md:gap-20 items-center justify-center md:items-start text-left">
                     {/* Left Column */}
-                    <div>
+                    <div className="items-center justify-center flex flex-col">
                         <h3 className="text-3xl font-bold text-purple-400 mb-8">What’s Included</h3>
                         <motion.ul
                             className="space-y-5"

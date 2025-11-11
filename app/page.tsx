@@ -46,7 +46,7 @@ export default function Home() {
       </div>
 
 
-      <div className="min-h-screen w-full  text-white overflow-x-hidden z-20
+      <div className="min-h-screen w-full text-white overflow-x-hidden overflow-visible z-20
          ">
 
 
