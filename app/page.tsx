@@ -40,13 +40,13 @@ export default function Home() {
       />
 
 
-      <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 overflow-hidden z-10">
         <div className="absolute -top-32 -left-32 w-96 h-96 bg-purple-600/30 rounded-full blur-[150px]" />
         <div className="absolute bottom-0 right-0 w-[450px] h-[450px] bg-blue-600/20 rounded-full blur-[200px]" />
       </div>
 
 
-      <div className="min-h-screen w-full  text-white overflow-x-hidden
+      <div className="min-h-screen w-full  text-white overflow-x-hidden z-20
          ">
 
 
