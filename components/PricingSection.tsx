@@ -147,7 +147,7 @@ const PricingSection = () => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/70 backdrop-blur-lg z-50 flex items-center justify-center p-4"
+                        className="fixed inset-0 bg-black/70 backdrop-blur-lg z-[9999] flex items-center justify-center p-4"
                         onClick={() => setIsModalOpen(false)}
                     >
                         <motion.div
@@ -175,7 +175,7 @@ const PricingSection = () => {
                                     </button>
                                 </div>
                             ) : (
-                                <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-4 z-[350]">
+                                <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-4 ">
                                     <h3 className="text-2xl font-bold text-white text-center mb-2">
                                         Suggest Your Price
                                     </h3>
