@@ -314,7 +314,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                 >
                     <div className="sm-logo flex items-center select-none pointer-events-auto" aria-label="Logo">
                         <img src={logoUrl || ''} alt="Logo" className="block md:h-12 h-8 w-auto object-contain" draggable={false} width={110} height={50} />
-                        <div className={`font-bold md:text-[28px] text-[18px] cursor-target ml-2 ${open ? "text-black md:text-white" : "text-white"}`}>
+                        <div className={`font-bold md:text-[28px] text-[14px] cursor-target ml-2 ${open ? "text-black md:text-white" : "text-white"}`}>
                             AURA-CONTROLS
                         </div>
                     </div>
