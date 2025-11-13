@@ -59,6 +59,8 @@ export async function createSubscriptionLink(planKey: "monthly" | "yearly", toke
                 userId: user._id,
                 username: user.name,
             },
+            callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment-success`,
+            callback_method: 'get' as const,
         };
 
         const subscription = await razorpay.subscriptions.create(subscriptionPayload);

@@ -47,59 +47,81 @@ const html_for_subscription_confirmation = (name: string, appUsername: string, a
 </body>
 </html>`;
 
-// --- The Webhook POST Handler ---
 export async function POST(req: NextRequest) {
-    const rawBody = await req.text();
+    console.log('--- [WEBHOOK RECEIVED] ---');
+    let rawBody;
+    try {
+        rawBody = await req.text();
+        console.log('1. Raw body received:', rawBody);
+    } catch (error) {
+        console.error('CRITICAL: Failed to read request body.', error);
+        return NextResponse.json({ error: 'Failed to read request body' }, { status: 500 });
+    }
+
     const signature = req.headers.get('x-razorpay-signature');
+    console.log('2. Received signature:', signature);
 
     if (!signature || !process.env.RAZORPAY_WEBHOOK_SECRET) {
+        console.error('ABORT: Missing signature or webhook secret in environment.');
         return NextResponse.json({ error: 'Missing signature or secret' }, { status: 400 });
     }
 
-    // 1. Verify the Webhook Signature
+    // --- 1. Verify the Webhook Signature ---
     try {
         const expectedSignature = crypto
             .createHmac('sha256', process.env.RAZORPAY_WEBHOOK_SECRET)
             .update(rawBody)
             .digest('hex');
 
+        console.log('3. Calculated expected signature:', expectedSignature);
+
         if (expectedSignature !== signature) {
-            console.warn('Invalid webhook signature received.');
+            console.warn('ABORT: Invalid webhook signature.');
             return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
         }
+        console.log('3a. SUCCESS: Signature verification passed.');
     } catch (error) {
-        console.error('Error during signature verification:', error);
+        console.error('CRITICAL: Error during signature verification:', error);
         return NextResponse.json({ error: 'Signature verification failed' }, { status: 500 });
     }
 
     const body = JSON.parse(rawBody);
+    console.log('4. Parsed body:', JSON.stringify(body, null, 2));
 
-    // 2. Check for the 'subscription.charged' event
+    // --- 2. Check for the 'subscription.charged' event ---
+    console.log('5. Event type is:', body.event);
     if (body.event === 'subscription.charged') {
+        console.log("5a. Event is 'subscription.charged'. Proceeding with logic.");
         try {
             const subscriptionEntity = body.payload.subscription.entity;
             const paymentEntity = body.payload.payment.entity;
+
+            console.log('6. Subscription Entity:', JSON.stringify(subscriptionEntity, null, 2));
+            console.log('7. Payment Entity:', JSON.stringify(paymentEntity, null, 2));
 
             const userId = subscriptionEntity.notes?.userId;
             const userName = subscriptionEntity.notes?.username;
             const userEmail = paymentEntity?.email;
 
+            console.log('8. Extracted Data:', { userId, userName, userEmail });
+
             if (!userId || !userName || !userEmail) {
-                console.error('Webhook payload missing crucial user info in notes.', subscriptionEntity.notes);
+                console.error('ABORT: Webhook payload missing crucial user info in notes or payment entity.');
                 return NextResponse.json({ error: 'Missing user information in payload' }, { status: 400 });
             }
 
-            // 3. Generate Secure App Credentials
+            // --- 3. Generate Secure App Credentials ---
             const appPassword = Math.random().toString(36).slice(-8);
             const hashedAppPassword = await bcrypt.hash(appPassword, 10);
             const appUsername = `${userName.replace(/\s+/g, '_').toLowerCase()}_${Math.floor(100 + Math.random() * 900)}`;
+            console.log('9. Generated App Credentials:', { appUsername, appPassword: '(raw, not logged)', hashedAppPassword: '...' });
 
-            // 4. Update the User in Sanity
-            // IMPORTANT: Use the correct schema name 'subscription' and fields as defined.
-            // This assumes you have a 'subscription' document linked to a 'user' document.
+            // --- 4. Update the User in Sanity ---
+            console.log(`10. Checking for existing subscription for user ID: ${userId}`);
             const existingSubscription = await sanityClient.fetch(`*[_type == "subscription" && user._ref == "${userId}"][0]`);
 
             if (existingSubscription) {
+                console.log(`10a. Found existing subscription (${existingSubscription._id}). Patching...`);
                 await sanityClient.patch(existingSubscription._id).set({
                     razorpaySubscriptionId: subscriptionEntity.id,
                     status: 'active',
@@ -108,8 +130,9 @@ export async function POST(req: NextRequest) {
                     endDate: new Date(subscriptionEntity.end_at * 1000).toISOString(),
                     planId: subscriptionEntity.plan_id,
                 }).commit();
+                console.log(`11a. SUCCESS: Patched existing subscription in Sanity.`);
             } else {
-                // This case is for the very first payment
+                console.log(`10b. No existing subscription found. Creating new one...`);
                 await sanityClient.create({
                     _type: 'subscription',
                     user: { _type: 'reference', _ref: userId },
@@ -121,13 +144,14 @@ export async function POST(req: NextRequest) {
                     endDate: new Date(subscriptionEntity.end_at * 1000).toISOString(),
                     planId: subscriptionEntity.plan_id,
                 });
+                console.log(`11b. SUCCESS: Created new subscription in Sanity.`);
             }
-            console.log(`Successfully activated subscription for user: ${userName} (${userId})`);
 
-            // --- 5. THE FIX: Call your existing email API route ---
+            // --- 5. Send Confirmation Email ---
             const emailApiUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/send_mail_api`;
+            console.log(`12. Preparing to send email via API route: ${emailApiUrl}`);
 
-            await fetch(emailApiUrl, {
+            const emailResponse = await fetch(emailApiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -137,15 +161,19 @@ export async function POST(req: NextRequest) {
                 }),
             });
 
-            console.log(`Confirmation email sent to ${userEmail} via API route.`);
+            if (emailResponse.ok) {
+                console.log(`13. SUCCESS: Confirmation email API call successful for ${userEmail}.`);
+            } else {
+                const errorBody = await emailResponse.text();
+                console.error(`13a. FAILED to send email. Status: ${emailResponse.status}. Body: ${errorBody}`);
+            }
 
         } catch (error) {
-            console.error('Error processing webhook:', error);
-            // Still return 200 OK to prevent Razorpay from retrying a failed webhook.
+            console.error('CRITICAL: Error processing webhook logic:', error);
             return NextResponse.json({ status: 'error', message: 'Internal server error during processing' }, { status: 200 });
         }
     }
 
-    // Acknowledge receipt of the webhook for any other events.
+    console.log('--- [WEBHOOK PROCESSED SUCCESSFULLY] ---');
     return NextResponse.json({ status: 'received' }, { status: 200 });
 }
