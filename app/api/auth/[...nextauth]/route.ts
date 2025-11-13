@@ -5,7 +5,7 @@ import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import { SanityAdapter, SanityCredentials } from "next-auth-sanity";
 
-export const options: NextAuthOptions = {
+export const OPTIONS: NextAuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -55,6 +55,6 @@ export const options: NextAuthOptions = {
   debug: true,
 };
 
-const handler = NextAuth(options);
+const handler = NextAuth(OPTIONS);
 
 export { handler as GET, handler as POST };
