@@ -38,7 +38,7 @@ const PaymentSuccessPage = () => {
                     <CheckCircle className="w-16 h-16 text-green-400 mb-6" />
                 </motion.div>
                 <h1 className="text-4xl font-bold text-white mb-3">Payment Successful!</h1>
-                <p className="text-white/70">Your subscription is now active. We're preparing your dashboard.</p>
+                <p className="text-white/70">Your subscription is now active. We&apos;re preparing your dashboard.</p>
                 <p className="text-white/70 mt-4">Redirecting you now...</p>
             </motion.div>
         </div>
