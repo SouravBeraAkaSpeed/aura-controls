@@ -1,43 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { client as sanityClient } from '@/lib/sanity_client';
-// bcrypt is no longer needed for comparison in this route
 import Razorpay from 'razorpay';
 
 export async function POST(req: NextRequest) {
     console.log('--- [DESKTOP LOGIN REQUEST RECEIVED] ---');
     try {
         const { username, password, deviceInfo } = await req.json();
-        console.log('1. Received Payload:', { username, deviceInfo });
-
         if (!username || !password || !deviceInfo || !deviceInfo.deviceId) {
-            console.log('ABORT: Missing credentials or device info.');
             return NextResponse.json({ error: 'Missing credentials or device info' }, { status: 400 });
         }
 
-        // --- 1. Find the subscription document based on the appUsername ---
-        console.log(`2. Querying Sanity for subscription with appUsername: ${username}`);
         const query = `*[_type == "subscription" && appUsername == $username][0]`;
-        const params = { username };
-        const subscription = await sanityClient.fetch(query, params);
+        const subscription = await sanityClient.fetch(query, { username });
 
-        if (!subscription) {
-            console.log(`2a. FAIL: No subscription found for username: ${username}`);
+        if (!subscription || password !== subscription.appPassword) {
             return NextResponse.json({ error: 'Invalid app username or password' }, { status: 401 });
         }
-        console.log('2b. SUCCESS: Found subscription document:', subscription._id);
 
-        // --- 2. THE FIX: Perform a direct string comparison ---
-        console.log('3. Comparing provided password with stored plain text password...');
-        if (password !== subscription.appPassword) {
-            console.log('3a. FAIL: Password does not match.');
-            // It's good security practice to log the lengths to see if there are extra spaces or encoding issues
-            console.log(`Provided length: ${password.length}, Stored length: ${subscription.appPassword?.length || 'N/A'}`);
-            return NextResponse.json({ error: 'Invalid app username or password' }, { status: 401 });
-        }
-        console.log('3b. SUCCESS: Password matches.');
-
-        // --- 3. Verify the subscription status with Razorpay ---
-        console.log(`4. Verifying Razorpay subscription status for ID: ${subscription.razorpaySubscriptionId}`);
         try {
             const razorpay = new Razorpay({
                 key_id: process.env.RAZORPAY_KEY_ID!,
@@ -45,40 +24,35 @@ export async function POST(req: NextRequest) {
             });
             const rzpSubscription = await razorpay.subscriptions.fetch(subscription.razorpaySubscriptionId);
             if (rzpSubscription.status !== 'active') {
-                console.log(`4a. FAIL: Subscription status is '${rzpSubscription.status}', not 'active'.`);
                 return NextResponse.json({ error: `Subscription is not active. Status: ${rzpSubscription.status}` }, { status: 402 });
             }
-            console.log('4b. SUCCESS: Subscription is active.');
         } catch (error) {
             console.error("Razorpay fetch error:", error);
-            return NextResponse.json({ error: "Could not verify subscription status with payment provider." }, { status: 500 });
+            return NextResponse.json({ error: "Could not verify subscription status." }, { status: 500 });
         }
 
-        // --- 4. Check device limits ---
-        console.log('5. Checking device limits...');
         const connectedDevices = subscription.connectedDevices || [];
         const deviceIdExists = connectedDevices.some((d: any) => d.deviceId === deviceInfo.deviceId);
-        console.log(`Current device ID: ${deviceInfo.deviceId}. Exists in list: ${deviceIdExists}. Device count: ${connectedDevices.length}`);
 
         if (deviceIdExists) {
-            console.log('5a. SUCCESS: Existing device login successful.');
             return NextResponse.json({ message: `Welcome back, ${username}!` }, { status: 200 });
         } else {
             if (connectedDevices.length >= 2) {
-                console.log('5b. FAIL: Maximum device limit (2) reached.');
-                return NextResponse.json({ error: 'Maximum device limit (2) reached for this subscription.' }, { status: 403 });
+                return NextResponse.json({ error: 'Maximum device limit (2) reached.' }, { status: 403 });
             } else {
-                console.log('5c. SUCCESS: New device. Registering...');
+                console.log('Registering new device in Sanity...');
+                // --- THE CRITICAL FIX IS HERE ---
+                // This patch ensures the array exists before trying to add to it.
                 await sanityClient
                     .patch(subscription._id)
-                    .append('connectedDevices', [deviceInfo])
+                    .setIfMissing({ connectedDevices: [] }) // Create the array if it doesn't exist
+                    .insert('after', 'connectedDevices[-1]', [deviceInfo]) // Insert the new device at the end
                     .commit();
 
-                console.log('5d. SUCCESS: New device registered in Sanity.');
+                console.log('SUCCESS: New device registered in Sanity.');
                 return NextResponse.json({ message: `Welcome, ${username}! Device registered.` }, { status: 200 });
             }
         }
-
     } catch (error) {
         console.error('CRITICAL: Unhandled error during desktop login:', error);
         return NextResponse.json({ error: 'An internal server error occurred' }, { status: 500 });
