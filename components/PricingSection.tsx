@@ -23,7 +23,7 @@ const CheckIcon = () => (
 );
 
 const PricingSection = () => {
-    const [isPriceSet] = useState(true);
+    const [isPriceSet] = useState(false);
     const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
     const [isSubscribing, setIsSubscribing] = useState(false);
 
