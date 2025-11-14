@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
             // 4. Generate App Credentials
             const appPassword = Math.random().toString(36).slice(-8);
             const hashedAppPassword = await bcrypt.hash(appPassword, 10);
-            const appUsername = `${(userName as string).replace(/\s+/g, '_').toLowerCase()}_${Math.floor(100 + Math.random() * 900)}`;
+            const appUsername = `${(userName as string).replace(/\s+/g, '_').toLowerCase()}_${Math.floor(100 + Math.random() * 90000)}`;
 
             // 5. Create or Update the subscription document in Sanity
             const existingSubscription = await sanityClient.fetch(`*[_type == "subscription" && user._ref == "${userId}"][0]`);
