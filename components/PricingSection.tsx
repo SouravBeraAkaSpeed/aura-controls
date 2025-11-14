@@ -9,25 +9,19 @@ import { toast } from "@/components/ui/use-toast";
 import { submitPriceVote } from "@/lib/pricingActions";
 import { createSubscriptionLink } from "@/lib/billingActions";
 
+
 const CheckIcon = () => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={2.5}
-        stroke="currentColor"
-        className="w-6 h-6 mr-3 text-purple-400 flex-shrink-0"
-    >
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6 mr-3 text-purple-400 flex-shrink-0">
         <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
     </svg>
 );
 
 const PricingSection = () => {
-    const [isPriceSet] = useState(false);
+    const [isPriceSet] = useState(true);
     const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
     const [isSubscribing, setIsSubscribing] = useState(false);
 
-    const [session, setSession] = useState<any | null>(null); // State for custom session
+    const [session, setSession] = useState<any | null>(null);
     const router = useRouter();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -37,7 +31,6 @@ const PricingSection = () => {
     const [whatsapp, setWhatsapp] = useState("");
     const formRef = useRef<HTMLFormElement>(null);
 
-    // --- NEW: Use your custom session fetching logic ---
     useEffect(() => {
         const getSession = async () => {
             const token = localStorage.getItem("sessionToken");
@@ -94,7 +87,6 @@ const PricingSection = () => {
             return;
         }
 
-        // We need to pass the token to the server action
         const token = localStorage.getItem("sessionToken");
         if (!token) {
             toast({ title: "Session Error", description: "Your session has expired. Please sign in again.", variant: "destructive" });
@@ -106,12 +98,11 @@ const PricingSection = () => {
         const result = await createSubscriptionLink(planKey, token);
 
         if (result.success && result.checkoutUrl) {
-
             router.push(`/subscribe/checkout?url=${encodeURIComponent(result.checkoutUrl)}`);
         } else {
             toast({ title: "Subscription Error", description: result.error, variant: "destructive" });
+            setIsSubscribing(false);
         }
-        setIsSubscribing(false);
     };
 
     const features = [
@@ -166,9 +157,9 @@ const PricingSection = () => {
                         </div>
 
                         <div className="w-full grid md:grid-cols-2 gap-14 md:gap-20 items-center justify-center text-center">
-                            <div className="flex flex-col items-center justify-center">
+                            <div>
                                 <h3 className="text-3xl font-bold text-purple-400 mb-8">What&apos;s Included</h3>
-                                <motion.ul className="space-y-5 " initial="hidden" whileInView="visible" variants={listVariants} viewport={{ once: true, amount: 0.2 }}>
+                                <motion.ul className="space-y-5" initial="hidden" whileInView="visible" variants={listVariants} viewport={{ once: true, amount: 0.2 }}>
                                     {features.map((feature, index) => (
                                         <motion.li key={index} className="flex items-center text-lg text-white/85" variants={itemVariants}>
                                             <CheckIcon />
@@ -201,8 +192,8 @@ const PricingSection = () => {
                         </div>
                     </div>
                 ) : (
-                    <div className="w-full max-w-4xl mt-20 grid md:grid-cols-2 gap-14 md:gap-20  items-center justify-center text-cente">
-                        <div className="flex flex-col items-center justify-center">
+                    <div className="w-full max-w-4xl mt-20 grid md:grid-cols-2 gap-14 md:gap-20 items-center justify-center text-center">
+                        <div>
                             <h3 className="text-3xl font-bold text-purple-400 mb-8">What&apos;s Included</h3>
                             <motion.ul className="space-y-5" initial="hidden" whileInView="visible" variants={listVariants} viewport={{ once: true, amount: 0.2 }}>
                                 {features.map((feature, index) => (
@@ -228,7 +219,32 @@ const PricingSection = () => {
                 {isModalOpen && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/70 backdrop-blur-lg z-[9999] flex items-center justify-center p-4" onClick={() => setIsModalOpen(false)}>
                         <motion.div initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }} transition={{ type: "spring", stiffness: 300, damping: 25 }} className="w-full max-w-md bg-[#141217] border border-white/10 rounded-2xl p-8 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                            {/* ... (Modal form remains the same) ... */}
+                            {submissionStatus === "success" ? (
+                                <div className="text-center">
+                                    <h3 className="text-2xl font-bold text-green-400 mb-4">Thank You!</h3>
+                                    <p className="text-white/70 mb-6">Your feedback has been recorded. We&apos;ll keep you updated!</p>
+                                    <button onClick={() => { setIsModalOpen(false); setSubmissionStatus("idle"); }} className="w-full px-6 py-2 bg-purple-600 rounded-lg">Close</button>
+                                </div>
+                            ) : (
+                                <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-4">
+                                    <h3 className="text-2xl font-bold text-white text-center mb-2">Suggest Your Price</h3>
+                                    <p className="text-white/60 text-center mb-4">What&apos;s a fair monthly price (INR) for Aura-Controls?</p>
+                                    <div className="relative">
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50 font-semibold">₹</span>
+                                        <input type="number" name="price" min="42" step="1" placeholder="42" required className="w-full bg-[#111015] border border-[#2D2A33] rounded-lg pl-8 pr-4 py-3 text-white/90 text-center text-xl focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                    </div>
+                                    <input type="email" name="email" placeholder="Your Email (Optional)" className="w-full bg-[#111015] border border-[#2D2A33] rounded-lg px-4 py-3 text-white/90 focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                    <div>
+                                        <PhoneInput country={"in"} value={whatsapp} onChange={setWhatsapp} inputClass="!w-full !bg-[#111015] !border !border-[#2D2A33] !rounded-lg !px-4 !py-3 !text-white/90 !pl-12 focus:!ring-2 focus:!ring-purple-500" buttonClass="!bg-[#111015] !border !border-[#2D2A33] !rounded-l-lg hover:!bg-[#2D2A33]" dropdownClass="!bg-[#1C1B1F] !border !border-[#2D2A33]" inputProps={{ name: "whatsapp" }} />
+                                        <p className="text-xs text-white/50 mt-1 pl-1">Optional: For product updates via WhatsApp.</p>
+                                    </div>
+                                    <textarea name="feedback" placeholder="Any additional feedback? (Optional)" rows={3} className="w-full bg-[#111015] border border-[#2D2A33] rounded-lg px-4 py-3 text-white/90 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"></textarea>
+                                    <button type="submit" disabled={isSubmitting} className="w-full px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-lg hover:opacity-90 transition-all duration-300 disabled:bg-gray-500">
+                                        {isSubmitting ? "Submitting..." : "Submit Vote"}
+                                    </button>
+                                    {submissionStatus === "error" && (<p className="text-red-400 text-center">{errorMessage}</p>)}
+                                </form>
+                            )}
                         </motion.div>
                     </motion.div>
                 )}
