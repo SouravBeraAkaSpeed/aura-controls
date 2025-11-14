@@ -157,7 +157,7 @@ const PricingSection = () => {
                         </div>
 
                         <div className="w-full grid md:grid-cols-2 gap-14 md:gap-20 items-center justify-center text-center">
-                            <div>
+                            <div className="flex flex-col items-center justify-center">
                                 <h3 className="text-3xl font-bold text-purple-400 mb-8">What&apos;s Included</h3>
                                 <motion.ul className="space-y-5" initial="hidden" whileInView="visible" variants={listVariants} viewport={{ once: true, amount: 0.2 }}>
                                     {features.map((feature, index) => (
@@ -193,7 +193,7 @@ const PricingSection = () => {
                     </div>
                 ) : (
                     <div className="w-full max-w-4xl mt-20 grid md:grid-cols-2 gap-14 md:gap-20 items-center justify-center text-center">
-                        <div>
+                        <div className="flex flex-col items-center justify-center">
                             <h3 className="text-3xl font-bold text-purple-400 mb-8">What&apos;s Included</h3>
                             <motion.ul className="space-y-5" initial="hidden" whileInView="visible" variants={listVariants} viewport={{ once: true, amount: 0.2 }}>
                                 {features.map((feature, index) => (
