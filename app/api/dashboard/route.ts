@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
     // 3. Fetch subscription data from Sanity using the user ID from the token
     const query = `*[_type == "subscription" && user._ref == $userId][0]{
       appUsername,
-      "appPassword": "Your app password is secure and not displayed here.",
+      appPassword,
       status,
       endDate,
       connectedDevices
@@ -36,15 +36,15 @@ export async function GET(req: NextRequest) {
     const params = { userId: userId };
 
     const subscriptionData = await client.fetch(query, params);
-    
+
     // 4. Return the appropriate response based on subscription status
     if (!subscriptionData || subscriptionData.status !== 'active') {
       return NextResponse.json({ isSubscribed: false }, { status: 200 });
     }
 
     return NextResponse.json({
-        isSubscribed: true,
-        ...subscriptionData
+      isSubscribed: true,
+      ...subscriptionData
     }, { status: 200 });
 
   } catch (error) {

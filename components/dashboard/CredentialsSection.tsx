@@ -1,10 +1,14 @@
 "use client";
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Clipboard, Computer, Calendar } from 'lucide-react';
-import { toast } from '@/components/ui/use-toast'; // Assuming you have a toast component
+import { Clipboard, Computer, Calendar, Eye, EyeOff } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 
 const CredentialsSection = ({ data }: { data: any }) => {
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+
     const copyToClipboard = (text: string, label: string) => {
+        if (!text) return;
         navigator.clipboard.writeText(text);
         toast({
             title: `${label} Copied!`,
@@ -12,8 +16,12 @@ const CredentialsSection = ({ data }: { data: any }) => {
         });
     };
 
+    const togglePasswordVisibility = () => {
+        setIsPasswordVisible(!isPasswordVisible);
+    };
+
     return (
-        <motion.section 
+        <motion.section
             className="p-8 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-lg"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -26,16 +34,29 @@ const CredentialsSection = ({ data }: { data: any }) => {
                 <div className="bg-black/40 p-5 rounded-xl">
                     <label className="text-sm text-white/60">App Username</label>
                     <div className="flex items-center justify-between mt-2">
-                        <p className="text-lg font-mono tracking-wider text-white/90">{data.appUsername}</p>
+                        <p className="text-lg font-mono tracking-wider text-white/90">{data.appUsername || 'Generating...'}</p>
                         <button onClick={() => copyToClipboard(data.appUsername, 'Username')} className="p-2 rounded-lg hover:bg-white/10 transition-colors">
                             <Clipboard className="w-5 h-5 text-white/70" />
                         </button>
                     </div>
                 </div>
-                {/* App Password */}
+
+                {/* --- THE FIX IS HERE: App Password with Show/Hide --- */}
                 <div className="bg-black/40 p-5 rounded-xl">
                     <label className="text-sm text-white/60">App Password</label>
-                    <p className="text-lg italic text-white/50 mt-2">{data.appPassword}</p>
+                    <div className="flex items-center justify-between mt-2">
+                        <p className="text-lg font-mono tracking-wider text-white/90">
+                            {isPasswordVisible ? data.appPassword : '••••••••'}
+                        </p>
+                        <div className="flex items-center gap-2">
+                            <button onClick={togglePasswordVisibility} className="p-2 rounded-lg hover:bg-white/10 transition-colors">
+                                {isPasswordVisible ? <EyeOff className="w-5 h-5 text-white/70" /> : <Eye className="w-5 h-5 text-white/70" />}
+                            </button>
+                            <button onClick={() => copyToClipboard(data.appPassword, 'Password')} className="p-2 rounded-lg hover:bg-white/10 transition-colors">
+                                <Clipboard className="w-5 h-5 text-white/70" />
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -43,8 +64,8 @@ const CredentialsSection = ({ data }: { data: any }) => {
             <div className="space-y-4">
                 {data.connectedDevices && data.connectedDevices.length > 0 ? (
                     data.connectedDevices.map((device: any, index: number) => (
-                        <motion.div 
-                            key={index} 
+                        <motion.div
+                            key={index}
                             className="flex items-center justify-between bg-black/40 p-4 rounded-xl"
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}

@@ -105,7 +105,6 @@ export async function POST(req: NextRequest) {
 
             // 4. Generate App Credentials
             const appPassword = Math.random().toString(36).slice(-8);
-            const hashedAppPassword = await bcrypt.hash(appPassword, 10);
             const appUsername = `${(userName as string).replace(/\s+/g, '_').toLowerCase()}_${Math.floor(100 + Math.random() * 90000)}`;
 
             // 5. Create or Update the subscription document in Sanity
@@ -115,7 +114,7 @@ export async function POST(req: NextRequest) {
                 razorpaySubscriptionId: fullSubscription.id,
                 status: 'active',
                 appUsername: appUsername,
-                appPassword: hashedAppPassword,
+                appPassword: appPassword,
                 startDate: new Date(fullSubscription.start_at * 1000).toISOString(),
                 endDate: new Date(fullSubscription.end_at * 1000).toISOString(),
                 planId: fullSubscription.plan_id,
@@ -134,7 +133,7 @@ export async function POST(req: NextRequest) {
             }
 
             // 6. Send Confirmation Email
-            const emailApiUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/send_mail_api`;
+            const emailApiUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/send_mail_api`;
             await fetch(emailApiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
