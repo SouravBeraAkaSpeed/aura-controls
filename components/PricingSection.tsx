@@ -106,7 +106,8 @@ const PricingSection = () => {
         const result = await createSubscriptionLink(planKey, token);
 
         if (result.success && result.checkoutUrl) {
-            window.location.href = result.checkoutUrl;
+
+            router.push(`/subscribe/checkout?url=${encodeURIComponent(result.checkoutUrl)}`);
         } else {
             toast({ title: "Subscription Error", description: result.error, variant: "destructive" });
         }

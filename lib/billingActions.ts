@@ -12,11 +12,11 @@ interface JwtPayload {
 
 const PLANS = {
     monthly: {
-        id: "plan_RfOaqK0uY6YFhv",
+        id: "plan_RfO2GSqwdo46HJ", // Your real ID
         total_count: 120,
     },
     yearly: {
-        id: "plan_RfOZniULfClaI9",
+        id: "plan_RfO3vC13fUKTLH", // Your real ID
         total_count: 10,
     },
 };
@@ -26,7 +26,7 @@ export async function createSubscriptionLink(planKey: "monthly" | "yearly", toke
     try {
         decodedToken = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
     } catch (error) {
-        return { success: false, error: "Your session is invalid or has expired. Please sign in again." };
+        return { success: false, error: "Your session is invalid or has expired." };
     }
 
     const userId = decodedToken.id;
@@ -54,21 +54,22 @@ export async function createSubscriptionLink(planKey: "monthly" | "yearly", toke
             plan_id: planDetails.id,
             total_count: planDetails.total_count,
             quantity: 1,
-            customer_notify: true,
+            customer_notify: true, // Use boolean true
             notes: {
                 userId: user._id,
                 username: user.name,
             },
-            callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment-success`,
-            callback_method: 'get' as const,
         };
 
         const subscription = await razorpay.subscriptions.create(subscriptionPayload);
 
-        return { success: true, checkoutUrl: subscription.short_url };
+        // Return both the ID (for polling) and the checkout URL
+        return { success: true, checkoutUrl: subscription.short_url, subscriptionId: subscription.id };
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Razorpay subscription creation error:", error);
-        return { success: false, error: "Could not create subscription link. Please try again later." };
+        // Provide a more specific error message if possible
+        const description = error.error?.description || "Could not create subscription link.";
+        return { success: false, error: description };
     }
 }
