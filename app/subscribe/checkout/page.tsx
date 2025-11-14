@@ -1,10 +1,9 @@
-// app/subscribe/checkout/page.tsx
 "use client";
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { Loader2, CheckCircle } from 'lucide-react';
+import { useEffect, useState, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Loader2, CheckCircle, ExternalLink } from 'lucide-react';
 
 const CheckoutPage = () => {
     const router = useRouter();
@@ -12,14 +11,20 @@ const CheckoutPage = () => {
     const checkoutUrl = searchParams.get('url');
 
     const [status, setStatus] = useState<'waiting' | 'polling' | 'success'>('waiting');
+    const razorpayTab = useRef<Window | null>(null);
 
     useEffect(() => {
         if (checkoutUrl) {
-            // Open Razorpay in a new tab
-            window.open(checkoutUrl, '_blank');
-            setStatus('polling');
+            // Store a reference to the new tab
+            razorpayTab.current = window.open(checkoutUrl, '_blank');
+            if (razorpayTab.current) {
+                setStatus('polling');
+            } else {
+                // This happens if a popup blocker is active
+                setStatus('waiting');
+                alert("Please disable your pop-up blocker and try again. A new tab needs to open for payment.");
+            }
         } else {
-            // If no URL, just redirect back to pricing
             router.push('/#pricing');
         }
     }, [checkoutUrl, router]);
@@ -33,7 +38,6 @@ const CheckoutPage = () => {
             return;
         }
 
-        // Poll the backend every 3 seconds to check for subscription status
         const intervalId = setInterval(async () => {
             try {
                 const res = await fetch('/api/billing/check-status', {
@@ -44,16 +48,45 @@ const CheckoutPage = () => {
                 if (data.status === 'active') {
                     setStatus('success');
                     clearInterval(intervalId);
-                    // Redirect to dashboard after a short delay
-                    setTimeout(() => router.push('/dashboard'), 2000);
+
+                    // --- THE KEY UX CHANGE IS HERE ---
+                    // While we can't reliably close the tab, this is the safest attempt.
+                    // In many modern browsers, this will not work for security reasons.
+                    // The primary UX is the message on our page telling the user they can close it.
+                    if (razorpayTab.current && !razorpayTab.current.closed) {
+                        razorpayTab.current.close();
+                    }
+
+                    setTimeout(() => router.push('/dashboard'), 3000); // Redirect after 3 seconds
                 }
             } catch (error) {
                 console.error("Polling error:", error);
             }
         }, 3000);
 
-        return () => clearInterval(intervalId); // Cleanup on unmount
+        return () => clearInterval(intervalId);
     }, [status, router]);
+
+    const getStatusContent = () => {
+        switch (status) {
+            case 'success':
+                return {
+                    icon: <CheckCircle className="w-16 h-16 text-green-400" />,
+                    title: "Payment Confirmed!",
+                    message: "Your subscription is active. You can now close the payment tab. Redirecting to your dashboard..."
+                };
+            case 'polling':
+            case 'waiting':
+            default:
+                return {
+                    icon: <Loader2 className="w-16 h-16 text-purple-400 animate-spin" />,
+                    title: "Awaiting Confirmation",
+                    message: "Please complete your payment in the new tab. This page will update automatically once confirmed."
+                };
+        }
+    };
+
+    const { icon, title, message } = getStatusContent();
 
     return (
         <div className="relative min-h-screen w-full bg-black text-white flex items-center justify-center p-4">
@@ -67,21 +100,26 @@ const CheckoutPage = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
             >
-                {status === 'success' ? (
-                    <>
-                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: 'spring' }}>
-                            <CheckCircle className="w-16 h-16 text-green-400 mb-6" />
-                        </motion.div>
-                        <h1 className="text-3xl font-bold">Payment Confirmed!</h1>
-                        <p className="text-white/70 mt-2">Your subscription is active. Redirecting to your dashboard...</p>
-                    </>
-                ) : (
-                    <>
-                        <Loader2 className="w-16 h-16 text-purple-400 mb-6 animate-spin" />
-                        <h1 className="text-3xl font-bold">Awaiting Confirmation</h1>
-                        <p className="text-white/70 mt-2">Your checkout has opened in a new tab. This page will update automatically once your payment is confirmed.</p>
-                        <p className="text-xs text-white/40 mt-4">(This may take a few moments)</p>
-                    </>
+                <motion.div
+                    key={status} // Animate the icon change
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: 'spring', duration: 0.5 }}
+                    className="mb-6"
+                >
+                    {icon}
+                </motion.div>
+                <h1 className="text-3xl font-bold">{title}</h1>
+                <p className="text-white/70 mt-2">{message}</p>
+
+                {status === 'polling' && (
+                    <button
+                        onClick={() => checkoutUrl && window.open(checkoutUrl, '_blank')}
+                        className="mt-6 flex items-center gap-2 text-sm text-purple-400 hover:text-purple-300 transition-colors"
+                    >
+                        <ExternalLink className="w-4 h-4" />
+                        Re-open payment tab if you closed it
+                    </button>
                 )}
             </motion.div>
         </div>
