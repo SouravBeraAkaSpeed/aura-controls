@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { client as sanityClient } from '@/lib/sanity_client';
-import bcrypt from 'bcrypt';
+// bcrypt is no longer needed for comparison in this route
 import Razorpay from 'razorpay';
 
 export async function POST(req: NextRequest) {
@@ -26,17 +26,12 @@ export async function POST(req: NextRequest) {
         }
         console.log('2b. SUCCESS: Found subscription document:', subscription._id);
 
-        // --- 2. Verify the password ---
-        console.log('3. Comparing provided password with stored hash...');
-        // IMPORTANT: The password from Sanity might be undefined if it was never set
-        if (!subscription.appPassword) {
-            console.error(`CRITICAL FAIL: appPassword field is missing in Sanity for subscription ${subscription._id}`);
-            return NextResponse.json({ error: 'Account configuration error. Please contact support.' }, { status: 500 });
-        }
-        const passwordMatches = await bcrypt.compare(password, subscription.appPassword);
-
-        if (!passwordMatches) {
+        // --- 2. THE FIX: Perform a direct string comparison ---
+        console.log('3. Comparing provided password with stored plain text password...');
+        if (password !== subscription.appPassword) {
             console.log('3a. FAIL: Password does not match.');
+            // It's good security practice to log the lengths to see if there are extra spaces or encoding issues
+            console.log(`Provided length: ${password.length}, Stored length: ${subscription.appPassword?.length || 'N/A'}`);
             return NextResponse.json({ error: 'Invalid app username or password' }, { status: 401 });
         }
         console.log('3b. SUCCESS: Password matches.');
