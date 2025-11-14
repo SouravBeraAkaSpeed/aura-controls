@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { client as sanityClient } from '@/lib/sanity_client';
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
+import Razorpay from 'razorpay'; // Import the main Razorpay class
 
 const html_for_subscription_confirmation = (name: string, appUsername: string, appPassword: string) => `
 <!DOCTYPE html>
@@ -48,15 +49,9 @@ const html_for_subscription_confirmation = (name: string, appUsername: string, a
 
 export async function POST(req: NextRequest) {
     console.log('--- [WEBHOOK RECEIVED] ---');
-    let rawBody;
-    try {
-        rawBody = await req.text();
-    } catch (error) {
-        console.error('CRITICAL: Failed to read request body.', error);
-        return NextResponse.json({ error: 'Failed to read request body' }, { status: 500 });
-    }
-
+    const rawBody = await req.text();
     const signature = req.headers.get('x-razorpay-signature');
+
     if (!signature || !process.env.RAZORPAY_WEBHOOK_SECRET) {
         return NextResponse.json({ error: 'Missing signature or secret' }, { status: 400 });
     }
@@ -71,78 +66,85 @@ export async function POST(req: NextRequest) {
     }
 
     const body = JSON.parse(rawBody);
-    console.log('Parsed body event:', body.event);
 
-    // --- THE FIX IS HERE: Listen for 'invoice.paid' as well ---
     if (body.event === 'invoice.paid' || body.event === 'subscription.charged') {
-        console.log(`Event '${body.event}' received. Proceeding with logic.`);
         try {
-            // Extract entities. Note that 'subscription.charged' payload is slightly different.
-            const invoiceEntity = body.payload.invoice?.entity;
-            const subscriptionEntity = body.payload.subscription?.entity;
             const paymentEntity = body.payload.payment.entity;
+            const razorpaySubscriptionId = body.payload.invoice?.entity?.subscription_id || body.payload.subscription?.entity?.id;
 
-            // --- Robustly get the subscription_id ---
-            const razorpaySubscriptionId = invoiceEntity?.subscription_id || subscriptionEntity?.id;
             if (!razorpaySubscriptionId) {
-                console.error("ABORT: Could not find subscription_id in payload.", body.payload);
-                return NextResponse.json({ error: 'Missing subscription ID' }, { status: 400 });
+                console.error("Webhook Error: Could not find subscription_id in the payload.", body.payload);
+                return NextResponse.json({ error: 'Missing subscription ID in payload' }, { status: 400 });
             }
 
-            // Fetch the full subscription object from Razorpay to get the notes
-            const fullSubscription = await sanityClient.fetch(`*[_type == "subscription" && razorpaySubscriptionId == "${razorpaySubscriptionId}"][0]`);
+            // --- THE CRITICAL FIX IS HERE ---
+            // 1. Initialize Razorpay client to fetch the full subscription object
+            const razorpay = new Razorpay({
+                key_id: process.env.RAZORPAY_KEY_ID!,
+                key_secret: process.env.RAZORPAY_KEY_SECRET!,
+            });
 
-            if (!fullSubscription) {
-                console.error(`ABORT: No matching subscription found in Sanity for Razorpay ID: ${razorpaySubscriptionId}`);
-                return NextResponse.json({ error: 'Subscription not found in our system' }, { status: 404 });
+            // 2. Fetch the subscription from Razorpay's servers to get the 'notes'
+            const fullSubscription = await razorpay.subscriptions.fetch(razorpaySubscriptionId);
+
+            const userId = fullSubscription.notes?.userId;
+            const userName = fullSubscription.notes?.username;
+            const userEmail = paymentEntity?.email;
+
+            if (!userId || !userName || !userEmail) {
+                console.error('Webhook Error: Missing crucial user info in fetched subscription notes.', fullSubscription.notes);
+                return NextResponse.json({ error: 'Missing user information in subscription notes' }, { status: 400 });
             }
 
-            // Get user info
-            const userRef = fullSubscription.user._ref;
-            const user = await sanityClient.fetch(`*[_type == "user" && _id == "${userRef}"][0]`);
-
+            // 3. User info is confirmed. Now, find the user in Sanity.
+            const user = await sanityClient.fetch(`*[_type == "user" && _id == "${userId}"][0]`);
             if (!user) {
-                console.error(`ABORT: User with ref ${userRef} not found.`);
-                return NextResponse.json({ error: 'Associated user not found' }, { status: 404 });
+                console.error(`Webhook Error: User with ID ${userId} not found in Sanity.`);
+                return NextResponse.json({ error: 'User not found in our database' }, { status: 404 });
             }
 
-            const userName = user.name;
-            const userEmail = paymentEntity?.email || user.email;
-
-            // Generate Secure App Credentials
+            // 4. Generate App Credentials
             const appPassword = Math.random().toString(36).slice(-8);
             const hashedAppPassword = await bcrypt.hash(appPassword, 10);
-            const appUsername = `${userName.replace(/\s+/g, '_').toLowerCase()}_${Math.floor(100 + Math.random() * 900)}`;
+            const appUsername = `${(userName as string).replace(/\s+/g, '_').toLowerCase()}_${Math.floor(100 + Math.random() * 900)}`;
 
-            // Update the Subscription in Sanity
-            await sanityClient.patch(fullSubscription._id).set({
+            // 5. Create or Update the subscription document in Sanity
+            const existingSubscription = await sanityClient.fetch(`*[_type == "subscription" && user._ref == "${userId}"][0]`);
+
+            const subscriptionData = {
+                razorpaySubscriptionId: fullSubscription.id,
                 status: 'active',
                 appUsername: appUsername,
                 appPassword: hashedAppPassword,
-                // These might already be set, but it's good to confirm
-                startDate: new Date(paymentEntity.created_at * 1000).toISOString(),
-                endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(), // Example: set for 1 year
-            }).commit();
+                startDate: new Date(fullSubscription.start_at * 1000).toISOString(),
+                endDate: new Date(fullSubscription.end_at * 1000).toISOString(),
+                planId: fullSubscription.plan_id,
+            };
 
-            console.log(`Successfully activated subscription for user: ${userName} (${user._id})`);
+            if (existingSubscription) {
+                await sanityClient.patch(existingSubscription._id).set(subscriptionData).commit();
+                console.log(`Successfully patched subscription for user: ${userName} (${userId})`);
+            } else {
+                await sanityClient.create({
+                    _type: 'subscription',
+                    user: { _type: 'reference', _ref: userId },
+                    ...subscriptionData
+                });
+                console.log(`Successfully created subscription for user: ${userName} (${userId})`);
+            }
 
-            // Send Confirmation Email
+            // 6. Send Confirmation Email
             const emailApiUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/send_mail_api`;
-            const emailResponse = await fetch(emailApiUrl, {
+            await fetch(emailApiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     to: userEmail,
                     subject: '🚀 Your Aura-Controls Subscription is Active!',
-                    html: html_for_subscription_confirmation(userName, appUsername, appPassword),
+                    html: html_for_subscription_confirmation(userName as string, appUsername, appPassword),
                 }),
             });
-
-            if (emailResponse.ok) {
-                console.log(`Confirmation email dispatched for ${userEmail}.`);
-            } else {
-                console.error(`Failed to dispatch email for ${userEmail}.`);
-            }
+            console.log(`Confirmation email dispatched for ${userEmail}.`);
 
         } catch (error) {
             console.error('CRITICAL: Error processing webhook logic:', error);
