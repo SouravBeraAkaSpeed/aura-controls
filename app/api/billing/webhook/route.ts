@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { client as sanityClient } from '@/lib/sanity_client';
 import crypto from 'crypto';
-import bcrypt from 'bcrypt';
-import Razorpay from 'razorpay'; // Import the main Razorpay class
+import Razorpay from 'razorpay';
 
 const html_for_subscription_confirmation = (name: string, appUsername: string, appPassword: string) => `
 <!DOCTYPE html>
@@ -48,7 +47,6 @@ const html_for_subscription_confirmation = (name: string, appUsername: string, a
 </html>`;
 
 export async function POST(req: NextRequest) {
-    console.log('--- [WEBHOOK RECEIVED] ---');
     const rawBody = await req.text();
     const signature = req.headers.get('x-razorpay-signature');
 
@@ -77,49 +75,58 @@ export async function POST(req: NextRequest) {
                 return NextResponse.json({ error: 'Missing subscription ID in payload' }, { status: 400 });
             }
 
-            // --- THE CRITICAL FIX IS HERE ---
-            // 1. Initialize Razorpay client to fetch the full subscription object
             const razorpay = new Razorpay({
                 key_id: process.env.RAZORPAY_KEY_ID!,
                 key_secret: process.env.RAZORPAY_KEY_SECRET!,
             });
 
-            // 2. Fetch the subscription from Razorpay's servers to get the 'notes'
             const fullSubscription = await razorpay.subscriptions.fetch(razorpaySubscriptionId);
-
             const userId = fullSubscription.notes?.userId;
-            const userName = fullSubscription.notes?.username;
             const userEmail = paymentEntity?.email;
 
-            if (!userId || !userName || !userEmail) {
-                console.error('Webhook Error: Missing crucial user info in fetched subscription notes.', fullSubscription.notes);
-                return NextResponse.json({ error: 'Missing user information in subscription notes' }, { status: 400 });
+            if (!userId || !userEmail) {
+                console.error('Webhook Error: Missing crucial user info in fetched subscription notes or payment entity.', { notes: fullSubscription.notes, email: userEmail });
+                return NextResponse.json({ error: 'Missing user information' }, { status: 400 });
             }
 
-            // 3. User info is confirmed. Now, find the user in Sanity.
             const user = await sanityClient.fetch(`*[_type == "user" && _id == "${userId}"][0]`);
             if (!user) {
                 console.error(`Webhook Error: User with ID ${userId} not found in Sanity.`);
-                return NextResponse.json({ error: 'User not found in our database' }, { status: 404 });
+                return NextResponse.json({ error: 'User not found' }, { status: 404 });
             }
+            const userName = user.name;
 
-            // 4. Generate App Credentials
-            const appPassword = Math.random().toString(36).slice(-8);
-            const appUsername = `${(userName as string).replace(/\s+/g, '_').toLowerCase()}_${Math.floor(100 + Math.random() * 90000)}`;
+            // --- THE CRITICAL FIX IS HERE ---
+            let appUsername: string;
+            let appPassword: string; // This is the raw password
 
-            // 5. Create or Update the subscription document in Sanity
+            // 1. Find the subscription document for this user in Sanity
             const existingSubscription = await sanityClient.fetch(`*[_type == "subscription" && user._ref == "${userId}"][0]`);
 
+            if (existingSubscription && existingSubscription.appUsername) {
+                // User already has credentials. This is a renewal.
+                console.log(`Renewal detected for user ${userName}. Using existing credentials.`);
+                appUsername = existingSubscription.appUsername;
+                appPassword = existingSubscription.appPassword; // Use existing raw password
+            } else {
+                // First-time payment. Generate new credentials.
+                console.log(`First-time subscription for user ${userName}. Generating new credentials.`);
+                appPassword = Math.random().toString(36).slice(-8);
+                appUsername = `${(userName as string).replace(/\s+/g, '_').toLowerCase()}_${Math.floor(100 + Math.random() * 90000)}`;
+            }
+
+            // 2. Prepare the data for Sanity (always update status and dates)
             const subscriptionData = {
                 razorpaySubscriptionId: fullSubscription.id,
                 status: 'active',
-                appUsername: appUsername,
-                appPassword: appPassword,
                 startDate: new Date(fullSubscription.start_at * 1000).toISOString(),
                 endDate: new Date(fullSubscription.end_at * 1000).toISOString(),
                 planId: fullSubscription.plan_id,
+                appUsername: appUsername,
+                appPassword: appPassword, // Store/update the raw password
             };
 
+            // 3. Create or update the document
             if (existingSubscription) {
                 await sanityClient.patch(existingSubscription._id).set(subscriptionData).commit();
                 console.log(`Successfully patched subscription for user: ${userName} (${userId})`);
@@ -131,8 +138,9 @@ export async function POST(req: NextRequest) {
                 });
                 console.log(`Successfully created subscription for user: ${userName} (${userId})`);
             }
+            // ------------------------------------
 
-            // 6. Send Confirmation Email
+            // 4. Send Confirmation Email (always sends the current credentials)
             const emailApiUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/send_mail_api`;
             await fetch(emailApiUrl, {
                 method: 'POST',
@@ -140,14 +148,14 @@ export async function POST(req: NextRequest) {
                 body: JSON.stringify({
                     to: userEmail,
                     subject: '🚀 Your Aura-Controls Subscription is Active!',
-                    html: html_for_subscription_confirmation(userName as string, appUsername, appPassword),
+                    html: html_for_subscription_confirmation(userName, appUsername, appPassword),
                 }),
             });
             console.log(`Confirmation email dispatched for ${userEmail}.`);
 
         } catch (error) {
             console.error('CRITICAL: Error processing webhook logic:', error);
-            return NextResponse.json({ status: 'error', message: 'Internal server error during processing' }, { status: 200 });
+            return NextResponse.json({ status: 'error', message: 'Internal server error' }, { status: 200 });
         }
     }
 
