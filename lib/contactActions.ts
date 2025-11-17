@@ -91,9 +91,9 @@ export async function submitContactForm(formData: FormData) {
       name, email, phone, service_name, query,
       createdAt: new Date().toISOString(),
     });
-    
 
-    const apiUrl = process.env.NODE_ENV === 'production'
+
+    const apiUrl = process.env.ENV !== 'dev'
       ? 'https://www.aura-controls.toil-labs.com/api/send_mail_api'
       : 'http://localhost:3000/api/send_mail_api';
 
