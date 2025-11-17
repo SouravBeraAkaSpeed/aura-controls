@@ -94,7 +94,7 @@ export async function submitContactForm(formData: FormData) {
 
 
     const apiUrl = process.env.ENV !== 'dev'
-      ? 'https://www.aura-controls.toil-labs.com/api/send_mail_api'
+      ? 'https://aura-controls.toil-labs.com/api/send_mail_api'
       : 'http://localhost:3000/api/send_mail_api';
 
     // 2. Send confirmation email to the user
