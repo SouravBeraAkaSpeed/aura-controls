@@ -134,7 +134,7 @@ const BillingPage = () => {
                                 <>
                                     <div className="border-t border-white/10 my-6"></div>
                                     <div className="text-center">
-                                        <p className="text-sm text-white/60 mb-3">Don't need your subscription anymore?</p>
+                                        <p className="text-sm text-white/60 mb-3">Don&apos;t need your subscription anymore?</p>
                                         <button
                                             onClick={() => setShowCancelModal(true)} // Open the modal instead of confirming
                                             className="px-6 py-2 cursor-pointer bg-red-600/80 text-white font-semibold rounded-full hover:bg-red-700 transition-colors flex items-center justify-center mx-auto"
@@ -150,7 +150,7 @@ const BillingPage = () => {
                         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white/5 backdrop-blur-xl border border-dashed border-white/20 rounded-2xl shadow-lg p-12 text-center flex flex-col items-center">
                             <CreditCard className="w-12 h-12 text-purple-400 mb-4" />
                             <h2 className="text-2xl font-bold text-white mb-2">No Active Subscription</h2>
-                            <p className="text-white/60 mb-6 max-w-md">You don't have an active Aura-Controls subscription. Choose a plan to unlock the future of control.</p>
+                            <p className="text-white/60 mb-6 max-w-md">You don&apos;t have an active Aura-Controls subscription. Choose a plan to unlock the future of control.</p>
                             <Link href="/#pricing">
                                 <button className="px-8 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold rounded-full hover:scale-105 transition-transform">
                                     View Plans
