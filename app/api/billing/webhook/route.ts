@@ -65,6 +65,8 @@ export async function POST(req: NextRequest) {
 
     const body = JSON.parse(rawBody);
 
+    console.log(body)
+
     if (body.event === 'invoice.paid' || body.event === 'subscription.charged') {
         try {
             const paymentEntity = body.payload.payment.entity;
