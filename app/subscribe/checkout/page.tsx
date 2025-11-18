@@ -1,9 +1,9 @@
 "use client";
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, CheckCircle, ExternalLink } from 'lucide-react';
+import { useEffect, useState, useRef, useCallback } from 'react';
+import { motion } from 'framer-motion';
+import { Loader2, CheckCircle, ExternalLink, RefreshCw } from 'lucide-react';
 
 const CheckoutPage = () => {
     const router = useRouter();
@@ -11,61 +11,66 @@ const CheckoutPage = () => {
     const checkoutUrl = searchParams.get('url');
 
     const [status, setStatus] = useState<'waiting' | 'polling' | 'success'>('waiting');
+    const [isCheckingManually, setIsCheckingManually] = useState(false);
     const razorpayTab = useRef<Window | null>(null);
 
+    // Reusable function to check the payment status
+    const checkStatus = useCallback(async () => {
+        const token = localStorage.getItem("sessionToken");
+        if (!token) {
+            router.push('/sign-in');
+            return;
+        }
+        try {
+            const res = await fetch('/api/billing/check-status', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+
+            if (data.status === 'active') {
+                setStatus('success');
+                if (razorpayTab.current && !razorpayTab.current.closed) {
+                    razorpayTab.current.close();
+                }
+                setTimeout(() => router.push('/dashboard'), 3000);
+            }
+        } catch (error) {
+            console.error("Polling error:", error);
+        }
+    }, [router]);
+
+    // Effect to open the Razorpay tab
     useEffect(() => {
         if (checkoutUrl) {
-            // Store a reference to the new tab
             razorpayTab.current = window.open(checkoutUrl, '_blank');
             if (razorpayTab.current) {
                 setStatus('polling');
             } else {
-                // This happens if a popup blocker is active
                 setStatus('waiting');
-                alert("Please disable your pop-up blocker and try again. A new tab needs to open for payment.");
+                alert("Please disable your pop-up blocker to complete the payment.");
             }
         } else {
             router.push('/#pricing');
         }
     }, [checkoutUrl, router]);
 
+    // Effect for automatic polling
     useEffect(() => {
         if (status !== 'polling') return;
 
-        const token = localStorage.getItem("sessionToken");
-        if (!token) {
-            router.push('/sign-in');
-            return;
-        }
-
-        const intervalId = setInterval(async () => {
-            try {
-                const res = await fetch('/api/billing/check-status', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
-
-                if (data.status === 'active') {
-                    setStatus('success');
-                    clearInterval(intervalId);
-
-                    // --- THE KEY UX CHANGE IS HERE ---
-                    // While we can't reliably close the tab, this is the safest attempt.
-                    // In many modern browsers, this will not work for security reasons.
-                    // The primary UX is the message on our page telling the user they can close it.
-                    if (razorpayTab.current && !razorpayTab.current.closed) {
-                        razorpayTab.current.close();
-                    }
-
-                    setTimeout(() => router.push('/dashboard'), 3000); // Redirect after 3 seconds
-                }
-            } catch (error) {
-                console.error("Polling error:", error);
-            }
-        }, 3000);
+        checkStatus(); // Check immediately once polling starts
+        const intervalId = setInterval(checkStatus, 5000); // Poll every 5 seconds
 
         return () => clearInterval(intervalId);
-    }, [status, router]);
+    }, [status, checkStatus]);
+
+    // Manual check handler
+    const handleManualCheck = async () => {
+        setIsCheckingManually(true);
+        await checkStatus();
+        // Add a small delay so the user sees the "Checking..." state
+        setTimeout(() => setIsCheckingManually(false), 1000);
+    };
 
     const getStatusContent = () => {
         switch (status) {
@@ -73,15 +78,13 @@ const CheckoutPage = () => {
                 return {
                     icon: <CheckCircle className="w-16 h-16 text-green-400" />,
                     title: "Payment Confirmed!",
-                    message: "Your subscription is active. You can now close the payment tab. Redirecting to your dashboard..."
+                    message: "Your subscription is active. Redirecting to your dashboard..."
                 };
-            case 'polling':
-            case 'waiting':
             default:
                 return {
                     icon: <Loader2 className="w-16 h-16 text-purple-400 animate-spin" />,
                     title: "Awaiting Confirmation",
-                    message: "Please complete your payment in the new tab. This page will update automatically once confirmed."
+                    message: "Please complete your payment in the new tab. This page will update automatically."
                 };
         }
     };
@@ -96,12 +99,12 @@ const CheckoutPage = () => {
             </div>
 
             <motion.div
-                className="relative z-10 flex flex-col items-center text-center p-8 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-lg max-w-md"
+                className="relative z-10 flex flex-col items-center text-center p-8 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-lg max-w-md w-full"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
             >
                 <motion.div
-                    key={status} // Animate the icon change
+                    key={status}
                     initial={{ scale: 0.5, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ type: 'spring', duration: 0.5 }}
@@ -113,13 +116,27 @@ const CheckoutPage = () => {
                 <p className="text-white/70 mt-2">{message}</p>
 
                 {status === 'polling' && (
-                    <button
-                        onClick={() => checkoutUrl && window.open(checkoutUrl, '_blank')}
-                        className="mt-6 flex items-center gap-2 text-sm text-purple-400 hover:text-purple-300 transition-colors"
-                    >
-                        <ExternalLink className="w-4 h-4" />
-                        Re-open payment tab if you closed it
-                    </button>
+                    <div className="mt-8 w-full flex flex-col items-center gap-4">
+                        <button
+                            onClick={handleManualCheck}
+                            disabled={isCheckingManually}
+                            className="flex items-center justify-center gap-2 w-full max-w-xs px-6 py-3 bg-purple-600 text-white font-semibold rounded-full hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-wait"
+                        >
+                            {isCheckingManually ? (
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                            ) : (
+                                <RefreshCw className="w-5 h-5" />
+                            )}
+                            {isCheckingManually ? "Checking..." : "Check Payment Status"}
+                        </button>
+                        <button
+                            onClick={() => checkoutUrl && window.open(checkoutUrl, '_blank')}
+                            className="flex items-center gap-2 text-sm text-purple-400 hover:text-purple-300 transition-colors"
+                        >
+                            <ExternalLink className="w-4 h-4" />
+                            Re-open payment tab
+                        </button>
+                    </div>
                 )}
             </motion.div>
         </div>
