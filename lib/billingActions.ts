@@ -73,3 +73,44 @@ export async function createSubscriptionLink(planKey: "monthly" | "yearly", toke
         return { success: false, error: description };
     }
 }
+
+
+
+export async function cancelSubscription(token: string) {
+    let decodedToken: JwtPayload;
+    try {
+        decodedToken = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
+    } catch (error) {
+        return { success: false, error: "Your session is invalid. Please sign in again." };
+    }
+
+    const userId = decodedToken.id;
+    const subscriptionDoc = await sanityClient.fetch(`*[_type == "subscription" && user._ref == "${userId}"][0]`);
+
+    if (!subscriptionDoc || !subscriptionDoc.razorpaySubscriptionId) {
+        return { success: false, error: "No active subscription found to cancel." };
+    }
+
+    try {
+        const razorpay = new Razorpay({
+            key_id: process.env.RAZORPAY_KEY_ID!,
+            key_secret: process.env.RAZORPAY_KEY_SECRET!,
+        });
+
+        // Cancel on Razorpay's end (stops future billing)
+        await razorpay.subscriptions.cancel(subscriptionDoc.razorpaySubscriptionId);
+
+        // Update status in Sanity
+        await sanityClient.patch(subscriptionDoc._id).set({ status: 'cancelled' }).commit();
+
+        return { success: true, message: "Your subscription has been cancelled successfully." };
+    } catch (error: any) {
+        console.error("Error cancelling subscription:", error);
+        // If it's already cancelled on Razorpay, we can still update our DB
+        if (error.error?.code === 'BAD_REQUEST_ERROR') {
+            await sanityClient.patch(subscriptionDoc._id).set({ status: 'cancelled' }).commit();
+            return { success: true, message: "Subscription already inactive, status updated." };
+        }
+        return { success: false, error: "Could not cancel subscription. Please contact support." };
+    }
+}

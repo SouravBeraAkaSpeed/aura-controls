@@ -11,6 +11,8 @@ import CredentialsSection from "@/components/dashboard/CredentialsSection";
 import QuerySection from "@/components/dashboard/QuerySection";
 import DownloadSection from "@/components/dashboard/DownloadSection";
 
+export const dynamic = 'force-dynamic';
+
 interface DashboardData {
     isSubscribed: boolean;
     appUsername?: string;
@@ -77,6 +79,7 @@ const DashboardPage = () => {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
+                    cache: 'no-store'
                 });
 
                 const result = await res.json();

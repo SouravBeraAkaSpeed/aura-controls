@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
 
   
 
-    if (body.event === 'subscription.charged') {
+    if (body.event === 'invoice.paid') {
         try {
             const paymentEntity = body.payload.payment.entity;
             const razorpaySubscriptionId = body.payload.invoice?.entity?.subscription_id || body.payload.subscription?.entity?.id;
