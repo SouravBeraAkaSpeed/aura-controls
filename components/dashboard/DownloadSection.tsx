@@ -1,6 +1,7 @@
 "use client";
 import { motion } from 'framer-motion';
 import { Download } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 
 const DownloadSection = () => {
     const windowsDownloadUrl = "https://pub-2a36f8b0425e47ee8ed97be6d739f2f4.r2.dev/aura-controls.zip";
@@ -25,7 +26,7 @@ const DownloadSection = () => {
                 {/* --- THE FIX IS HERE: Windows Download Button --- */}
                 <a href={windowsDownloadUrl} download="aura-controls.zip">
                     <motion.button
-                        className="w-full sm:w-auto px-8 py-3 bg-white text-black font-semibold rounded-full"
+                        className="w-full sm:w-auto px-8 py-3 cursor-pointer bg-white text-black font-semibold rounded-full"
                         whileHover={{ scale: 1.05 }}
                         transition={{ type: "spring", stiffness: 300 }}
                     >
@@ -34,12 +35,18 @@ const DownloadSection = () => {
                 </a>
 
                 {/* --- macOS Download Button (Disabled for now) --- */}
-                <motion.button
-                    className="w-full sm:w-auto px-8 py-3 bg-white/10 border border-white/20 text-white/50 font-semibold rounded-full cursor-not-allowed"
-                    title="Coming soon!"
-                >
-                    Download for macOS
-                </motion.button>
+                <Tooltip>
+                    <TooltipTrigger>
+                        <motion.button
+                            className="w-full sm:w-auto px-8 py-3 bg-white/10 border border-white/20 text-white/50 font-semibold rounded-full cursor-not-allowed"
+                            title="Coming soon!"
+                        >
+                            Download for macOS
+                        </motion.button></TooltipTrigger>
+                    <TooltipContent>
+                        <p>Coming Soon 🔥</p>
+                    </TooltipContent>
+                </Tooltip>
 
             </div>
         </motion.section>
