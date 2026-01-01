@@ -1,7 +1,7 @@
 import { createClient } from "@sanity/client";
-import imageUrlBuilder from "@sanity/image-url";
-import { ImageUrlBuilder } from "@sanity/image-url/lib/types/builder";
-import { SanityImageSource } from "@sanity/image-url/lib/types/types";
+import imageUrlBuilder, { ImageUrlBuilder, SanityImageSource } from "@sanity/image-url";
+// import { ImageUrlBuilder } from "@sanity/image-url/lib/types/builder";
+// import { SanityImageSource } from "@sanity/image-url/lib/types/types";
 
 export const revalidate = 0;
 
