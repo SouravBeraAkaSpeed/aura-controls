@@ -54,9 +54,17 @@ const newTextVariant: Variants = {
     },
 };
 
+
+
 const HeroSection = () => {
 
     const router = useRouter()
+
+    const TOKEN_NAME = "Aura Controls";
+    const TOKEN_TICKER = "AURA-CTRL";
+    const CA = "Gco39BGtiFH8bPVZFbJD7BDVJKLpn92u4rYFBF4ipump";
+
+    const copyCA = () => navigator.clipboard.writeText(CA);
     return (
         <div className="relative z-40 flex  h-full   w-full flex-col items-center justify-center text-center px-4">
             <motion.div
@@ -109,7 +117,50 @@ const HeroSection = () => {
                     </span>
                 </motion.h1>
 
+                {/* CA Section */}
+                {/* Token Badge */}
+                <motion.div
+                    variants={itemVariants}
+                    className="flex items-center gap-4 px-5 py-3 bg-black/20 border border-white/20 rounded-2xl backdrop-blur-sm"
+                >
+                    {/* Token Info */}
+                    <div className="flex flex-col items-start">
+                        <span className="text-sm font-semibold text-white">{TOKEN_NAME}</span>
+                        <span className="text-xs text-purple-400">{TOKEN_TICKER} Token</span>
+                    </div>
+
+                    {/* Divider */}
+                    <div className="h-6 w-px bg-white/20" />
+
+                    {/* CA */}
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs text-white/50">CA</span>
+                        <span className="text-sm text-white/80 font-mono">
+                            {CA.slice(0, 6)}...{CA.slice(-6)}
+                        </span>
+                    </div>
+
+                    {/* Actions */}
+                    <button
+                        onClick={copyCA}
+                        className="text-xs px-2 py-1 bg-white/10 hover:bg-white/20 rounded-md transition"
+                    >
+                        Copy
+                    </button>
+
+                    <a
+                        href="https://pump.fun/coin/Gco39BGtiFH8bPVZFbJD7BDVJKLpn92u4rYFBF4ipump"
+                        target="_blank"
+                        className="text-xs px-2 py-1 bg-purple-500/20 hover:bg-purple-500/30 rounded-md transition text-purple-300"
+                    >
+                        View
+                    </a>
+                </motion.div>
+
                 {/* Action Buttons */}
+
+                {/* Action Buttons */}
+
                 <motion.div variants={itemVariants} className="flex gap-4 mt-4">
                     <button onClick={() => {
                         router.push("/#pricing")
