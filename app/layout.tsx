@@ -54,6 +54,9 @@ export default function RootLayout({
           </SessionProvider>
 
         </GoogleOAuthProvider>
+
+
+        <a href="https://scribiq.com/"><div style={{ position: 'fixed', bottom: '1rem', right: '1.5rem', padding: '0.5rem', border: '2px solid black', color: 'black', backgroundColor: 'white', borderRadius: '10px', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15)', fontSize: '0.875rem', zIndex: 9999 }}>Made with ScribIQ</div></a>
       </body>
     </html>
   );
